@@ -27,9 +27,11 @@ func main() {
 		log.Fatal(err)
 	}
 	dbQueries := database.New(db)
+	secret := os.Getenv("SECRET")
 
 	cfg := api.APIConfig{
 		DB: dbQueries,
+		SECRET: secret,
 	}
 
 
@@ -41,8 +43,9 @@ func main() {
 	mux.HandleFunc("POST /api/users", cfg.CreateUserHandler)
 	mux.HandleFunc("POST /api/bugs", cfg.CreateBugHandler)
 	mux.HandleFunc("POST /api/login", cfg.LoginUserHandler)
-
-
+	mux.HandleFunc("POST /api/refresh", cfg.RefreshTokenHandler)
+	mux.HandleFunc("POST /api/revoke", cfg.RevokeTokenHandler)
+	mux.HandleFunc("PUT /api/users", cfg.UpdateCredentialsHandler)
 	
 	server := &http.Server{
 		Addr: ":8080",

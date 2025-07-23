@@ -6,5 +6,6 @@ import (
 
 type APIConfig struct {
 	DB *database.Queries
+	SECRET string
 
 } 
