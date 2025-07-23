@@ -10,9 +10,26 @@ import (
 	"github.com/google/uuid"
 )
 
+type Bug struct {
+	ID          uuid.UUID
+	Title       string
+	Description string
+	PostedBy    uuid.UUID
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+}
+
+type GooseDbVersion struct {
+	ID        int32
+	VersionID int64
+	IsApplied bool
+	Tstamp    time.Time
+}
+
 type User struct {
-	ID        uuid.UUID
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	Email     string
+	ID             uuid.UUID
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
+	Email          string
+	HashedPassword string
 }

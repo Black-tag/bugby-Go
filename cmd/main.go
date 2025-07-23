@@ -3,19 +3,17 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 
+	"github.com/blacktag/bugby-Go/internal/api"
 	"github.com/blacktag/bugby-Go/internal/database"
 	"github.com/joho/godotenv"
-	"github.com/lib/pq"
-	
+	_ "github.com/lib/pq"
 )
 
-type apiConfig struct {
-	db *database.Queries
 
-} 
 
 
 
@@ -24,18 +22,26 @@ func main() {
 	godotenv.Load()
 
 	dbURL := os.Getenv("DB_URL")
-	db, err := sql.Open("postgre", dbURL)
+	db, err := sql.Open("postgres", dbURL)
+	if err != nil {
+		log.Fatal(err)
+	}
 	dbQueries := database.New(db)
 
-	cfg := apiapiConfig{
-		db: dbQueries,
+	cfg := api.APIConfig{
+		DB: dbQueries,
 	}
 
 
 
-	mainFileServer := http.FileServer((http.Dir(".")))
+	
 	mux := http.NewServeMux()
-	mux.Handle("/", mainFileServer)
+	
+	
+	mux.HandleFunc("POST /api/users", cfg.CreateUserHandler)
+	mux.HandleFunc("POST /api/bugs", cfg.CreateBugHandler)
+	mux.HandleFunc("POST /api/login", cfg.LoginUserHandler)
+
 
 	
 	server := &http.Server{
