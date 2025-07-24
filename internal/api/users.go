@@ -3,6 +3,8 @@ package api
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
+	"log"
 	"net/http"
 	"time"
 
@@ -41,17 +43,19 @@ func (cfg *APIConfig) CreateUserHandler(w http.ResponseWriter, r *http.Request) 
 		utils.RespondWithError(w, http.StatusBadRequest, "email field required")
 		return
 	 }
+	 
 	 hashed_password, err := utils.HashPassword(req.Password)
 	 if err != nil {
 		utils.RespondWithError(w, http.StatusInternalServerError, "cannot hashPassword")
 		return
 	 }
-
+	 
 	 user, err := cfg.DB.CreateUser(r.Context(), database.CreateUserParams{
 		Email: req.Email,
 		HashedPassword: hashed_password,
 	 })
 	 if err != nil {
+		log.Printf("cannot create user: %v", err)
 		utils.RespondWithError(w, http.StatusInternalServerError, "cannot create user")
 		return
 	 }
@@ -136,6 +140,7 @@ func (cfg *APIConfig) LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 
 func (cfg *APIConfig) RefreshTokenHandler(w http.ResponseWriter, r *http.Request) {
 	tokenString, err := utils.GetBearerToken(r.Header)
+	fmt.Println("tokenstring:", tokenString)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusUnauthorized, "missing refresh token")
 		return
@@ -145,6 +150,7 @@ func (cfg *APIConfig) RefreshTokenHandler(w http.ResponseWriter, r *http.Request
 		utils.RespondWithError(w, http.StatusUnauthorized, "invalid token")
 		return
 	}
+	fmt.Println("refreshToken:",refreshToken)
 	if refreshToken.RevokedAt.Valid || time.Now().After(refreshToken.ExpiresAt){ 
 		utils.RespondWithError(w, http.StatusUnauthorized, "refresh token expired or revoked")
 		return

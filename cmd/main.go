@@ -6,11 +6,14 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/blacktag/bugby-Go/internal/api"
 	"github.com/blacktag/bugby-Go/internal/database"
+	"github.com/blacktag/bugby-Go/internal/middleware"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
+	// "github.com/ydb-platform/ydb-go-sdk/v3/ratelimiter"
 )
 
 
@@ -47,9 +50,16 @@ func main() {
 	mux.HandleFunc("POST /api/revoke", cfg.RevokeTokenHandler)
 	mux.HandleFunc("PUT /api/users", cfg.UpdateCredentialsHandler)
 	
+
+
+
+
+
+	ratelimiter := middleware.NewRateLimiter(5,10,time.Minute)
+	muxWithLimiter := ratelimiter.Limit(mux)
 	server := &http.Server{
 		Addr: ":8080",
-		Handler: mux,
+		Handler: muxWithLimiter,
 	}
 
 	fmt.Println("🌐 starting the server on: http://localhost:8080...")
