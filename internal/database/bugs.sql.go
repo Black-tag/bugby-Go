@@ -7,6 +7,7 @@ package database
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/google/uuid"
 )
@@ -43,4 +44,88 @@ func (q *Queries) CreateBug(ctx context.Context, arg CreateBugParams) (Bug, erro
 		&i.UpdatedAt,
 	)
 	return i, err
+}
+
+const deleteBugByID = `-- name: DeleteBugByID :exec
+DELETE FROM bugs
+WHERE id = $1
+`
+
+func (q *Queries) DeleteBugByID(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, deleteBugByID, id)
+	return err
+}
+
+const getAllBugs = `-- name: GetAllBugs :many
+SELECT id, title, description, posted_by, created_at, updated_at FROM bugs
+ORDER BY created_at DESC
+`
+
+func (q *Queries) GetAllBugs(ctx context.Context) ([]Bug, error) {
+	rows, err := q.db.QueryContext(ctx, getAllBugs)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Bug
+	for rows.Next() {
+		var i Bug
+		if err := rows.Scan(
+			&i.ID,
+			&i.Title,
+			&i.Description,
+			&i.PostedBy,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getBugsByID = `-- name: GetBugsByID :one
+SELECT id, title, description, posted_by, created_at, updated_at FROM bugs
+WHERE Id = $1
+`
+
+func (q *Queries) GetBugsByID(ctx context.Context, id uuid.UUID) (Bug, error) {
+	row := q.db.QueryRowContext(ctx, getBugsByID, id)
+	var i Bug
+	err := row.Scan(
+		&i.ID,
+		&i.Title,
+		&i.Description,
+		&i.PostedBy,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updateBugByID = `-- name: UpdateBugByID :exec
+UPDATE bugs
+SET 
+    title = COALESCE($2, title),
+    description = COALESCE($3, description),
+    updated_at = Now()
+WHERE id = $1
+`
+
+type UpdateBugByIDParams struct {
+	ID          uuid.UUID
+	Title       sql.NullString
+	Description sql.NullString
+}
+
+func (q *Queries) UpdateBugByID(ctx context.Context, arg UpdateBugByIDParams) error {
+	_, err := q.db.ExecContext(ctx, updateBugByID, arg.ID, arg.Title, arg.Description)
+	return err
 }

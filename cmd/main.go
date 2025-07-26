@@ -41,8 +41,10 @@ func main() {
 
 	
 	mux := http.NewServeMux()
-	
-	
+	mux.HandleFunc("DELETE /api/bugs/{bugid}", cfg.DeleteBugByIDHandler)
+	mux.HandleFunc("POST /api/bugs/{bugid}", cfg.UpadteBugHandler)
+	mux.HandleFunc("GET /api/bugs/{bugid}", cfg.GetBUgByIDHandler)
+	mux.HandleFunc("GET /api/bugs", cfg.GetBugsHandler)
 	mux.HandleFunc("POST /api/users", cfg.CreateUserHandler)
 	mux.HandleFunc("POST /api/bugs", cfg.CreateBugHandler)
 	mux.HandleFunc("POST /api/login", cfg.LoginUserHandler)
@@ -58,7 +60,7 @@ func main() {
 	ratelimiter := middleware.NewRateLimiter(5,10,time.Minute)
 	muxWithLimiter := ratelimiter.Limit(mux)
 	server := &http.Server{
-		Addr: ":8080",
+		Addr: "localhost:8080",
 		Handler: muxWithLimiter,
 	}
 
