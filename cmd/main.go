@@ -48,8 +48,8 @@ func main() {
 
 
 
-	mux.HandleFunc("DELETE /api/bugs/{bugid}", cfg.DeleteBugByIDHandler)
-	mux.HandleFunc("POST /api/bugs/{bugid}", cfg.UpadteBugHandler)
+	mux.Handle("DELETE /api/bugs/{bugid}", authMiddleware(http.HandlerFunc(cfg.DeleteBugByIDHandler)))
+	mux.Handle("POST /api/bugs/{bugid}", authMiddleware(http.HandlerFunc(cfg.UpadteBugHandler)))
 	mux.HandleFunc("GET /api/bugs/{bugid}", cfg.GetBugByIDHandler)
 	mux.HandleFunc("GET /api/bugs", cfg.GetBugsHandler)
 	mux.HandleFunc("POST /api/users", cfg.CreateUserHandler)

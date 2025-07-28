@@ -77,23 +77,23 @@ func RevokeTokenAthenticate (db RefreshTokenFetcher) func(http.Handler) http.Han
 	return func (next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request){
 			authHeader := r.Header.Get("Authorization")
-			fmt.Printf("authheader: %v",authHeader)
+			
 			if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer") {
 				utils.RespondWithError(w, http.StatusUnauthorized, "missing or invalid auth header")
 				return
 			}
 			parts := strings.Split(authHeader, " ")
-			fmt.Printf("parts: %v", parts)
+			
 			if len(parts) != 2 || parts[0] != "Bearer" {
 				utils.RespondWithError(w, http.StatusUnauthorized, "malformed token")
 				return
 			}
 			tokenString := parts[1]
-			fmt.Printf("tokenString: %v", tokenString)
+			
 			
 
 			refreshToken, err := db.GetRefreshToken(r.Context(), tokenString)
-			fmt.Printf("refreshToken: %v", refreshToken)
+			
 			if err != nil {
 				utils.RespondWithError(w, http.StatusUnauthorized, "invalid refresh token")
 				return

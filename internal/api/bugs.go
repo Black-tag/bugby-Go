@@ -96,6 +96,12 @@ func (cfg *APIConfig) GetBugByIDHandler (w http.ResponseWriter, r *http.Request)
 
 
 func (cfg *APIConfig) UpadteBugHandler (w http.ResponseWriter, r *http.Request) {
+	userIDVal := r.Context().Value("userID")
+	userID, ok := userIDVal.(uuid.UUID)
+	if !ok {
+		utils.RespondWithError(w, http.StatusUnauthorized, "invalid or missing user ID")
+		return
+	}
 	bugParam := r.PathValue("bugid")
 	if bugParam == "" {
 		utils.RespondWithError(w, http.StatusBadRequest, " no id given ")
@@ -117,6 +123,18 @@ func (cfg *APIConfig) UpadteBugHandler (w http.ResponseWriter, r *http.Request) 
 		utils.RespondWithError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
+	
+	bug, err := cfg.DB.GetBugsByID(r.Context(), bugID)
+	if err != nil { 
+		utils.RespondWithError(w, http.StatusInternalServerError, "no bug  found with the id")
+		return
+
+	}
+	if userID != bug.PostedBy {
+		utils.RespondWithError(w, http.StatusUnauthorized, "only author can delete the bug")
+		return
+
+	}
 	params := database.UpdateBugByIDParams{
 		ID: bugID,
 		Title: toNullString(req.Title),
@@ -124,7 +142,6 @@ func (cfg *APIConfig) UpadteBugHandler (w http.ResponseWriter, r *http.Request) 
 		
 	}
 	
-
 	err = cfg.DB.UpdateBugByID(r.Context(), params)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusInternalServerError, "cannot update bug")
@@ -133,6 +150,7 @@ func (cfg *APIConfig) UpadteBugHandler (w http.ResponseWriter, r *http.Request) 
 	updatedbug, err := cfg.DB.GetBugsByID(r.Context(), bugID)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusInternalServerError, "cannot fetch updated bug")
+		return
 	}
 	utils.RespondWithJSON(w, http.StatusOK, updatedbug)
 }
@@ -144,6 +162,12 @@ func toNullString(s *string) sql.NullString {
 }
 
 func (cfg *APIConfig) DeleteBugByIDHandler (w http.ResponseWriter, r *http.Request) {
+	userIDVal := r.Context().Value("userID")
+	userID, ok := userIDVal.(uuid.UUID)
+	if !ok {
+		utils.RespondWithError(w, http.StatusUnauthorized, "invalid or missing user ID")
+		return
+	}
 	bugParam := r.PathValue("bugid")
 	if bugParam == "" {
 		utils.RespondWithError(w, http.StatusBadRequest, "no id in the request")
@@ -154,9 +178,14 @@ func (cfg *APIConfig) DeleteBugByIDHandler (w http.ResponseWriter, r *http.Reque
 		utils.RespondWithError(w, http.StatusBadRequest, "wrong format id")
 		return
 	}
-	_, err = cfg.DB.GetBugsByID(r.Context(), bugID)
+	bug, err := cfg.DB.GetBugsByID(r.Context(), bugID)
 	if err != nil { 
 		utils.RespondWithError(w, http.StatusInternalServerError, "no bug  found with the id")
+		return
+
+	}
+	if userID != bug.PostedBy {
+		utils.RespondWithError(w, http.StatusUnauthorized, "only author can delete the bug")
 		return
 
 	}
