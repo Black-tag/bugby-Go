@@ -41,16 +41,22 @@ func main() {
 
 	
 	mux := http.NewServeMux()
+
+	authMiddleware := middleware.Authenticate1(cfg.SECRET)
+	authMiddleware2 := middleware.RevokeTokenAthenticate( cfg.DB)
+	mux.Handle("POST /api/bugs", authMiddleware(http.HandlerFunc(cfg.CreateBugHandler)))
+
+
+
 	mux.HandleFunc("DELETE /api/bugs/{bugid}", cfg.DeleteBugByIDHandler)
 	mux.HandleFunc("POST /api/bugs/{bugid}", cfg.UpadteBugHandler)
-	mux.HandleFunc("GET /api/bugs/{bugid}", cfg.GetBUgByIDHandler)
+	mux.HandleFunc("GET /api/bugs/{bugid}", cfg.GetBugByIDHandler)
 	mux.HandleFunc("GET /api/bugs", cfg.GetBugsHandler)
 	mux.HandleFunc("POST /api/users", cfg.CreateUserHandler)
-	mux.HandleFunc("POST /api/bugs", cfg.CreateBugHandler)
 	mux.HandleFunc("POST /api/login", cfg.LoginUserHandler)
 	mux.HandleFunc("POST /api/refresh", cfg.RefreshTokenHandler)
-	mux.HandleFunc("POST /api/revoke", cfg.RevokeTokenHandler)
-	mux.HandleFunc("PUT /api/users", cfg.UpdateCredentialsHandler)
+	mux.Handle("POST /api/revoke", authMiddleware2(http.HandlerFunc(cfg.RevokeTokenHandler)))
+	mux.Handle("PUT /api/users", authMiddleware(http.HandlerFunc(cfg.UpdateCredentialsHandler)))
 	
 
 

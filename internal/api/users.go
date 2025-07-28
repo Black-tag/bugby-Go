@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+
 	"log"
 	"net/http"
 	"time"
@@ -140,7 +141,7 @@ func (cfg *APIConfig) LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 
 func (cfg *APIConfig) RefreshTokenHandler(w http.ResponseWriter, r *http.Request) {
 	tokenString, err := utils.GetBearerToken(r.Header)
-	fmt.Println("tokenstring:", tokenString)
+	// fmt.Println("tokenstring:", tokenString)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusUnauthorized, "missing refresh token")
 		return
@@ -150,7 +151,7 @@ func (cfg *APIConfig) RefreshTokenHandler(w http.ResponseWriter, r *http.Request
 		utils.RespondWithError(w, http.StatusUnauthorized, "invalid token")
 		return
 	}
-	fmt.Println("refreshToken:",refreshToken)
+	// fmt.Println("refreshToken:",refreshToken)
 	if refreshToken.RevokedAt.Valid || time.Now().After(refreshToken.ExpiresAt){ 
 		utils.RespondWithError(w, http.StatusUnauthorized, "refresh token expired or revoked")
 		return
@@ -167,13 +168,33 @@ func (cfg *APIConfig) RefreshTokenHandler(w http.ResponseWriter, r *http.Request
 	
 }
 func (cfg *APIConfig) RevokeTokenHandler (w http.ResponseWriter, r *http.Request) {
-	tokenString, err := utils.GetBearerToken(r.Header)
-	if err != nil {
-		utils.RespondWithError(w, http.StatusUnauthorized, "Missing refresh token")
-        return
+	// tokenString, err := utils.GetBearerToken(r.Header)
+	// if err != nil {
+	// 	utils.RespondWithError(w, http.StatusUnauthorized, "Missing refresh token")
+    //     return
+	// }
+	// userIDVal := r.Context().Value("userID")
+	// userID, ok := userIDVal.(uuid.UUID)
+	// if !ok {
+	// 	utils.RespondWithError(w, http.StatusUnauthorized, "invalid or missing user ID")
+	// 	return
+	// }
+	// tokenStringVal := r.Context().Value("tokenString")
+	// tokenString, ok := tokenStringVal.(string)
+	// if !ok {
+	// 	utils.RespondWithError(w, http.StatusUnauthorized, "invalid token string in context")
+	// 	return
+	// }
+	tokenString, ok := r.Context().Value("refreshTokenString").(string)
+	if !ok {
+		utils.RespondWithError(w, http.StatusUnauthorized, "invalid token string in context")
+		return
 	}
+	
 
-	err = cfg.DB.RevokeRefreshToken(r.Context(), tokenString)
+
+	fmt.Printf("tokenString in revoke handler from context: %v", tokenString)
+	err := cfg.DB.RevokeRefreshToken(r.Context(), tokenString)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to revoke token")
         return
@@ -183,16 +204,14 @@ func (cfg *APIConfig) RevokeTokenHandler (w http.ResponseWriter, r *http.Request
 
 
 func (cfg *APIConfig) UpdateCredentialsHandler(w http.ResponseWriter, r *http.Request) {
-	tokenString, err := utils.GetBearerToken(r.Header)
-	if err != nil {
-		utils.RespondWithError(w, http.StatusUnauthorized, "invalid/missing access token ")
+	
+	userIDVal := r.Context().Value("userID")
+	userID, ok := userIDVal.(uuid.UUID)
+	if !ok {
+		utils.RespondWithError(w, http.StatusUnauthorized, "invalid or missing user ID")
 		return
 	}
-	userID, err := utils.ValidateJWT(tokenString, cfg.SECRET)
-	if err!= nil {
-		utils.RespondWithError(w,http.StatusUnauthorized, "invalid Access token")
-		return
-	}
+
 	type updateReq struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`

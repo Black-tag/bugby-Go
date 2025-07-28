@@ -16,6 +16,12 @@ import (
 
 func (cfg *APIConfig) CreateBugHandler (w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Content-Type", "application/json")
+	userIDValue := r.Context().Value("userID")
+	userID, ok := userIDValue.(uuid.UUID)
+	if !ok {
+		utils.RespondWithError(w, http.StatusUnauthorized, "cannot find user ID")
+		return
+	}
 	type CreateBugRequest struct {
 		Title        string    `json:"title"`
 		Description  string    `json:"description"`
@@ -31,7 +37,7 @@ func (cfg *APIConfig) CreateBugHandler (w http.ResponseWriter, r *http.Request){
 	bug, err := cfg.DB.CreateBug(r.Context(),database.CreateBugParams{
 		Title: req.Title,
 		Description: req.Description,
-		PostedBy: req.PostedBy,
+		PostedBy: userID,
 	})
 	if err != nil {
 		utils.RespondWithError(w, http.StatusInternalServerError, "cannot create bug")
@@ -67,7 +73,7 @@ func (cfg *APIConfig) GetBugsHandler (w http.ResponseWriter, r *http.Request) {
 }
 
 
-func (cfg *APIConfig) GetBUgByIDHandler (w http.ResponseWriter, r *http.Request) {
+func (cfg *APIConfig) GetBugByIDHandler (w http.ResponseWriter, r *http.Request) {
 	
 	bugIDParam := r.PathValue("bugid")
 
@@ -154,16 +160,11 @@ func (cfg *APIConfig) DeleteBugByIDHandler (w http.ResponseWriter, r *http.Reque
 		return
 
 	}
-	// if bug.PostedBy != bugID {
-	// 	utils.RespondWithError(w, http.StatusForbidden, "you can only delete your own chirp")
-	// 	return
-	// }
 	err = cfg.DB.DeleteBugByID(r.Context(), bugID)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusInternalServerError, "cannot delete bug")
 		return
 	}
-	// utils.RespondWithJSON(w, http.StatusNoContent, "bug deleted successfully")
 	w.WriteHeader(http.StatusNoContent)
 }
 
