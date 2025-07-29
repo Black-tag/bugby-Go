@@ -1,0 +1,223 @@
+basePath: /api
+definitions:
+  api.CreateBugResponse:
+    properties:
+      bug_id:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      posted_by:
+        type: string
+      title:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  database.Bug:
+    properties:
+      createdAt:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      postedBy:
+        type: string
+      title:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  database.User:
+    properties:
+      createdAt:
+        type: string
+      email:
+        type: string
+      hashedPassword:
+        type: string
+      id:
+        type: string
+      role:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: your-email@example.com
+    name: Anand Unni
+    url: https://github.com/Black-tag
+  description: A bug tracking API written in Go with JWT, PostgreSQL and RBAC.
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: Bugby API
+  version: "1.0"
+paths:
+  /api/bug/{bugid}:
+    put:
+      consumes:
+      - application/json
+      description: Existing users can update their bug
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/database.Bug'
+      security:
+      - BearerAuth: []
+      summary: Update an existing  bug
+      tags:
+      - users
+  /api/bugs:
+    get:
+      consumes:
+      - application/json
+      description: users can get all existing bugs
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/database.Bug'
+      security:
+      - BearerAuth: []
+      summary: Get existing  bugs
+      tags:
+      - users
+    post:
+      consumes:
+      - application/json
+      description: Existing users can create bugs
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/api.CreateBugResponse'
+      security:
+      - BearerAuth: []
+      summary: Create bugs
+      tags:
+      - users
+  /api/bugs/{bugid}:
+    delete:
+      consumes:
+      - application/json
+      description: admin can delete bugs using their id
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+      security:
+      - BearerAuth: []
+      summary: Delete an existing  user
+      tags:
+      - bugs
+    get:
+      consumes:
+      - application/json
+      description: Existing users can update their info using email and password
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/database.Bug'
+      security:
+      - BearerAuth: []
+      summary: GET bug by id
+      tags:
+      - bugs
+  /api/login:
+    post:
+      consumes:
+      - application/json
+      description: Existing users can login using email and password
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/database.User'
+      security:
+      - BearerAuth: []
+      summary: Login an existing  user
+      tags:
+      - users
+  /api/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Existing users can refresh jwt token for future use
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+      security:
+      - BearerAuth: []
+      summary: Refresh jwtoken of an existing user
+      tags:
+      - refreshTokens
+  /api/revoke:
+    post:
+      consumes:
+      - application/json
+      description: Existing users can revoke token using email and password
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+      security:
+      - BearerAuth: []
+      summary: Revoke user token
+      tags:
+      - users
+  /api/users:
+    post:
+      consumes:
+      - application/json
+      description: Creates user with Email and Password
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/database.User'
+      security:
+      - BearerAuth: []
+      summary: Creates a new  user
+      tags:
+      - users
+    put:
+      consumes:
+      - application/json
+      description: Existing users can update their info using email and password
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/database.User'
+      security:
+      - BearerAuth: []
+      summary: Update an existing  user
+      tags:
+      - users
+swagger: "2.0"

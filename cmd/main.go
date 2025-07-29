@@ -1,3 +1,17 @@
+// @title Bugby API
+// @version 1.0
+// @description A bug tracking API written in Go with JWT, PostgreSQL and RBAC.
+// @termsOfService http://swagger.io/terms/
+
+// @contact.name Anand Unni
+// @contact.url https://github.com/Black-tag
+// @contact.email your-email@example.com
+
+// @license.name MIT
+// @license.url https://opensource.org/licenses/MIT
+
+// @host localhost:8080
+// @BasePath /api
 package main
 
 import (
@@ -8,6 +22,7 @@ import (
 	"os"
 	"time"
 
+	
 	"github.com/blacktag/bugby-Go/internal/api"
 	"github.com/blacktag/bugby-Go/internal/database"
 	"github.com/blacktag/bugby-Go/internal/middleware"
@@ -16,6 +31,9 @@ import (
 	fileadapter "github.com/casbin/casbin/v2/persist/file-adapter"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
+	httpswagger "github.com/swaggo/http-swagger"
+	_ "github.com/blacktag/bugby-Go/docs"
+	
 	// "github.com/ydb-platform/ydb-go-sdk/v3/ratelimiter"
 )
 
@@ -48,7 +66,7 @@ func main() {
 
 	
 	
-
+	
 
 	 
 	authMiddleware := middleware.Authenticate1(cfg.SECRET, cfg.DB)
@@ -68,7 +86,7 @@ func main() {
 	mux.HandleFunc("POST /api/refresh", cfg.RefreshTokenHandler)
 	mux.Handle("POST /api/revoke", authMiddleware2(http.HandlerFunc(cfg.RevokeTokenHandler)))
 	mux.Handle("PUT /api/users", authMiddleware(http.HandlerFunc(cfg.UpdateCredentialsHandler)))
-	
+	mux.HandleFunc("/swagger/", httpswagger.WrapHandler)
 
 
 

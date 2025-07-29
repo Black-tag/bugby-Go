@@ -62,12 +62,7 @@ func Authenticate1(secret string, db *database.Queries) func (http.Handler) http
 				return
 			}
 
-			// userUUID, err := uuid.Parse(userID)
-			// if err != nil {
-			// 	utils.RespondWithError(w, http.StatusInternalServerError, "cannot parse userid to uuid")
-			// 	return
-
-			// }
+		
 			role, err := db.GetRoleByID(r.Context(), userID)
 			if err != nil {
 				utils.RespondWithError(w, http.StatusUnauthorized, "unable to fetch role")

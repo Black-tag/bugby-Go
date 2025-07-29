@@ -9,11 +9,30 @@ import (
 	"github.com/blacktag/bugby-Go/internal/database"
 	"github.com/blacktag/bugby-Go/internal/utils"
 	"github.com/google/uuid"
+	
 )
 
 
+type CreateBugResponse struct {
+		ID           uuid.UUID `json:"bug_id"`
+		Title        string    `json:"title"`
+		Description  string    `json:"description"`
+		PostedBy     uuid.UUID `json:"posted_by"`
+		CreatedBy    time.Time `json:"created_at"`
+		Updated_at   time.Time `json:"updated_at"`
+
+	}
 
 
+
+// @Summary Create bugs
+// @Description Existing users can create bugs 
+// @Tags users
+// @Accept json
+// @Produce json
+// @Success 201 {object} CreateBugResponse
+// @Router /api/bugs [post]
+// @Security BearerAuth
 func (cfg *APIConfig) CreateBugHandler (w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Content-Type", "application/json")
 	userIDValue := r.Context().Value("userID")
@@ -43,15 +62,7 @@ func (cfg *APIConfig) CreateBugHandler (w http.ResponseWriter, r *http.Request){
 		utils.RespondWithError(w, http.StatusInternalServerError, "cannot create bug")
 		return
 	}
-	type CreateBugResponse struct {
-		ID           uuid.UUID `json:"bug_id"`
-		Title        string    `json:"title"`
-		Description  string    `json:"description"`
-		PostedBy     uuid.UUID `json:"posted_by"`
-		CreatedBy    time.Time `json:"created_at"`
-		Updated_at   time.Time `json:"updated_at"`
-
-	}
+	
 	utils.RespondWithJSON(w, http.StatusCreated, CreateBugResponse{
 		ID: bug.ID,
 		Title: bug.Title,
@@ -62,7 +73,14 @@ func (cfg *APIConfig) CreateBugHandler (w http.ResponseWriter, r *http.Request){
 	})
 	
 }
-
+// @Summary Get existing  bugs
+// @Description  users can get all existing bugs
+// @Tags users
+// @Accept json
+// @Produce json
+// @Success 200 {object} database.Bug
+// @Router /api/bugs [get]
+// @Security BearerAuth
 func (cfg *APIConfig) GetBugsHandler (w http.ResponseWriter, r *http.Request) {
 	bugs, err := cfg.DB.GetAllBugs(r.Context())
 	if err != nil {
@@ -72,7 +90,14 @@ func (cfg *APIConfig) GetBugsHandler (w http.ResponseWriter, r *http.Request) {
 	utils.RespondWithJSON(w, http.StatusOK, bugs)
 }
 
-
+// @Summary GET bug by id
+// @Description Existing users can update their info using email and password
+// @Tags bugs
+// @Accept json
+// @Produce json
+// @Success 200 {object} database.Bug
+// @Router /api/bugs/{bugid} [get]
+// @Security BearerAuth
 func (cfg *APIConfig) GetBugByIDHandler (w http.ResponseWriter, r *http.Request) {
 	
 	bugIDParam := r.PathValue("bugid")
@@ -94,7 +119,14 @@ func (cfg *APIConfig) GetBugByIDHandler (w http.ResponseWriter, r *http.Request)
 	utils.RespondWithJSON(w, http.StatusOK, bug)
 }
 
-
+// @Summary Update an existing  bug
+// @Description Existing users can update their bug
+// @Tags users
+// @Accept json
+// @Produce json
+// @Success 200 {object} database.Bug
+// @Router /api/bug/{bugid} [put]
+// @Security BearerAuth
 func (cfg *APIConfig) UpadteBugHandler (w http.ResponseWriter, r *http.Request) {
 	userIDVal := r.Context().Value("userID")
 	userID, ok := userIDVal.(uuid.UUID)
@@ -160,7 +192,14 @@ func toNullString(s *string) sql.NullString {
 	}
 	return sql.NullString{String: *s, Valid: true}
 }
-
+// @Summary Delete an existing  user
+// @Description admin can delete bugs using their id
+// @Tags bugs
+// @Accept json
+// @Produce json
+// @Success 204  
+// @Router /api/bugs/{bugid} [delete]
+// @Security BearerAuth
 func (cfg *APIConfig) DeleteBugByIDHandler (w http.ResponseWriter, r *http.Request) {
 	userIDVal := r.Context().Value("userID")
 	userID, ok := userIDVal.(uuid.UUID)

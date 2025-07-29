@@ -3,7 +3,7 @@ package api
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
+	
 
 	"log"
 	"net/http"
@@ -29,7 +29,14 @@ type createUserResponse struct {
     }
 
 
-
+// @Summary Creates a new  user
+// @Description Creates user with Email and Password
+// @Tags users
+// @Accept json
+// @Produce json
+// @Success 201 {object} database.User
+// @Router /api/users [post]
+// @Security BearerAuth
 func (cfg *APIConfig) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	
 	w.Header().Set("Content-Type", "application/json")
@@ -68,7 +75,14 @@ func (cfg *APIConfig) CreateUserHandler(w http.ResponseWriter, r *http.Request) 
 	 })
 
 }
-
+// @Summary Login an existing  user
+// @Description Existing users can login using email and password
+// @Tags users
+// @Accept json
+// @Produce json
+// @Success 200 {object} database.User
+// @Router /api/login [post]
+// @Security BearerAuth
 func (cfg *APIConfig) LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 	type loginuserRequest struct {
 		Email    string `json:"email"`
@@ -138,10 +152,17 @@ func (cfg *APIConfig) LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	})
 }
-
+// @Summary Refresh jwtoken of an existing user
+// @Description Existing users can refresh jwt token for future use
+// @Tags refreshTokens
+// @Accept json
+// @Produce json
+// @Success 201 
+// @Router /api/refresh [post]
+// @Security BearerAuth
 func (cfg *APIConfig) RefreshTokenHandler(w http.ResponseWriter, r *http.Request) {
 	tokenString, err := utils.GetBearerToken(r.Header)
-	// fmt.Println("tokenstring:", tokenString)
+	
 	if err != nil {
 		utils.RespondWithError(w, http.StatusUnauthorized, "missing refresh token")
 		return
@@ -151,7 +172,7 @@ func (cfg *APIConfig) RefreshTokenHandler(w http.ResponseWriter, r *http.Request
 		utils.RespondWithError(w, http.StatusUnauthorized, "invalid token")
 		return
 	}
-	// fmt.Println("refreshToken:",refreshToken)
+	
 	if refreshToken.RevokedAt.Valid || time.Now().After(refreshToken.ExpiresAt){ 
 		utils.RespondWithError(w, http.StatusUnauthorized, "refresh token expired or revoked")
 		return
@@ -167,33 +188,20 @@ func (cfg *APIConfig) RefreshTokenHandler(w http.ResponseWriter, r *http.Request
 	
 	
 }
+// @Summary Revoke user token
+// @Description Existing users can revoke token using email and password
+// @Tags users
+// @Accept json
+// @Produce json
+// @Success 204  
+// @Router /api/revoke [post]
+// @Security BearerAuth
 func (cfg *APIConfig) RevokeTokenHandler (w http.ResponseWriter, r *http.Request) {
-	// tokenString, err := utils.GetBearerToken(r.Header)
-	// if err != nil {
-	// 	utils.RespondWithError(w, http.StatusUnauthorized, "Missing refresh token")
-    //     return
-	// }
-	// userIDVal := r.Context().Value("userID")
-	// userID, ok := userIDVal.(uuid.UUID)
-	// if !ok {
-	// 	utils.RespondWithError(w, http.StatusUnauthorized, "invalid or missing user ID")
-	// 	return
-	// }
-	// tokenStringVal := r.Context().Value("tokenString")
-	// tokenString, ok := tokenStringVal.(string)
-	// if !ok {
-	// 	utils.RespondWithError(w, http.StatusUnauthorized, "invalid token string in context")
-	// 	return
-	// }
 	tokenString, ok := r.Context().Value("refreshTokenString").(string)
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "invalid token string in context")
 		return
 	}
-	
-
-
-	fmt.Printf("tokenString in revoke handler from context: %v", tokenString)
 	err := cfg.DB.RevokeRefreshToken(r.Context(), tokenString)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to revoke token")
@@ -203,6 +211,14 @@ func (cfg *APIConfig) RevokeTokenHandler (w http.ResponseWriter, r *http.Request
 }
 
 
+// @Summary Update an existing  user
+// @Description Existing users can update their info using email and password
+// @Tags users
+// @Accept json
+// @Produce json
+// @Success 201 {object} database.User
+// @Router /api/users [put]
+// @Security BearerAuth
 func (cfg *APIConfig) UpdateCredentialsHandler(w http.ResponseWriter, r *http.Request) {
 	
 	userIDVal := r.Context().Value("userID")
