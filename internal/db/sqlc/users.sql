@@ -21,3 +21,6 @@ SET
     hashed_password = $2,
     updated_at = Now()
 WHERE id = $3;
+
+-- name: GetRoleByID :one
+SELECT role FROM users WHERE id = $1;

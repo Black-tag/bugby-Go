@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -23,7 +22,7 @@ type RefreshTokenFetcher interface {
 
 
 
-func Authenticate1(secret string) func (http.Handler) http.Handler {
+func Authenticate1(secret string, db *database.Queries) func (http.Handler) http.Handler {
 	return func (next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			authHeader := r.Header.Get("Authorization")
@@ -62,9 +61,21 @@ func Authenticate1(secret string) func (http.Handler) http.Handler {
 				utils.RespondWithError(w, http.StatusInternalServerError, "error parsing user id")
 				return
 			}
-			fmt.Printf("user id: %v\n", userID)
+
+			// userUUID, err := uuid.Parse(userID)
+			// if err != nil {
+			// 	utils.RespondWithError(w, http.StatusInternalServerError, "cannot parse userid to uuid")
+			// 	return
+
+			// }
+			role, err := db.GetRoleByID(r.Context(), userID)
+			if err != nil {
+				utils.RespondWithError(w, http.StatusUnauthorized, "unable to fetch role")
+				return
+			}
 			ctx := context.WithValue(r.Context(), "userID", userID, )
 			ctx = context.WithValue(ctx, "tokenString", tokenSring )
+			ctx = context.WithValue(ctx, "role", role)
 			next.ServeHTTP(w, r.WithContext(ctx))
 
 

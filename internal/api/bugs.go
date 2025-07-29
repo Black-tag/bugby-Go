@@ -168,6 +168,18 @@ func (cfg *APIConfig) DeleteBugByIDHandler (w http.ResponseWriter, r *http.Reque
 		utils.RespondWithError(w, http.StatusUnauthorized, "invalid or missing user ID")
 		return
 	}
+	userVal := r.Context().Value("user")
+	user, ok := userVal.(database.User)
+	if !ok {
+    	utils.RespondWithError(w, http.StatusUnauthorized, "user not in context")
+    	return
+	}
+
+	if user.Role != "admin" {
+    	utils.RespondWithError(w, http.StatusForbidden, "admin access required")
+    	return
+	}
+
 	bugParam := r.PathValue("bugid")
 	if bugParam == "" {
 		utils.RespondWithError(w, http.StatusBadRequest, "no id in the request")

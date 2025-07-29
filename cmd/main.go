@@ -11,6 +11,9 @@ import (
 	"github.com/blacktag/bugby-Go/internal/api"
 	"github.com/blacktag/bugby-Go/internal/database"
 	"github.com/blacktag/bugby-Go/internal/middleware"
+	"github.com/casbin/casbin/v2"
+	"github.com/casbin/casbin/v2/model"
+	fileadapter "github.com/casbin/casbin/v2/persist/file-adapter"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	// "github.com/ydb-platform/ydb-go-sdk/v3/ratelimiter"
@@ -36,19 +39,27 @@ func main() {
 		DB: dbQueries,
 		SECRET: secret,
 	}
+	enforcer, err := SetupCasbin()
+	if err != nil {
+		log.Fatal("failed to setup casbin: %w", err)
+	}
 
 
 
 	
+	
+
+
+	 
+	authMiddleware := middleware.Authenticate1(cfg.SECRET, cfg.DB)
+	authMiddleware2 := middleware.RevokeTokenAthenticate( cfg.DB)
+
+
 	mux := http.NewServeMux()
 
-	authMiddleware := middleware.Authenticate1(cfg.SECRET)
-	authMiddleware2 := middleware.RevokeTokenAthenticate( cfg.DB)
+	protected := authMiddleware(middleware.Authorization(enforcer)(http.HandlerFunc(cfg.DeleteBugByIDHandler)))
 	mux.Handle("POST /api/bugs", authMiddleware(http.HandlerFunc(cfg.CreateBugHandler)))
-
-
-
-	mux.Handle("DELETE /api/bugs/{bugid}", authMiddleware(http.HandlerFunc(cfg.DeleteBugByIDHandler)))
+	mux.Handle("DELETE /api/bugs/{bugid}", protected)
 	mux.Handle("POST /api/bugs/{bugid}", authMiddleware(http.HandlerFunc(cfg.UpadteBugHandler)))
 	mux.HandleFunc("GET /api/bugs/{bugid}", cfg.GetBugByIDHandler)
 	mux.HandleFunc("GET /api/bugs", cfg.GetBugsHandler)
@@ -65,6 +76,21 @@ func main() {
 
 	ratelimiter := middleware.NewRateLimiter(5,10,time.Minute)
 	muxWithLimiter := ratelimiter.Limit(mux)
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
 	server := &http.Server{
 		Addr: "localhost:8080",
 		Handler: muxWithLimiter,
@@ -81,3 +107,26 @@ func main() {
 
 
 }
+
+
+func SetupCasbin() (*casbin.Enforcer, error) {
+		m, err := model.NewModelFromFile("rbac_model.conf")
+		if err != nil {
+			
+			return nil, fmt.Errorf("cannot load model for enforcer: %w", err)
+		}	
+
+		a := fileadapter.NewAdapter("rbac_policy.csv")
+
+		enforcer, err := casbin.NewEnforcer(m, a)
+		if err != nil {
+			
+			return nil, fmt.Errorf("cannot create enforcer: %w", err)
+		} 
+		err = enforcer.LoadPolicy()
+		if err != nil {
+			
+			return nil, fmt.Errorf("cannot load policy: %w", err)
+		}
+		return enforcer, nil
+	}

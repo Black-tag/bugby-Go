@@ -83,7 +83,8 @@ CREATE TABLE public.users (
     created_at timestamp without time zone NOT NULL,
     updated_at timestamp without time zone NOT NULL,
     email text NOT NULL,
-    hashed_password text DEFAULT 'unset'::text NOT NULL
+    hashed_password text DEFAULT 'unset'::text NOT NULL,
+    role text DEFAULT 'user'::text NOT NULL
 );
 
 

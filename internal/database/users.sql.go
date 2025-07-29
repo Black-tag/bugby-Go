@@ -7,6 +7,7 @@ package database
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -20,7 +21,7 @@ VALUES (
     $1,
     $2
 )
-RETURNING id, created_at, updated_at, email, hashed_password
+RETURNING id, created_at, updated_at, email, hashed_password, role
 `
 
 type CreateUserParams struct {
@@ -37,8 +38,20 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.UpdatedAt,
 		&i.Email,
 		&i.HashedPassword,
+		&i.Role,
 	)
 	return i, err
+}
+
+const getRoleByID = `-- name: GetRoleByID :one
+SELECT role FROM users WHERE id = $1
+`
+
+func (q *Queries) GetRoleByID(ctx context.Context, id uuid.UUID) (string, error) {
+	row := q.db.QueryRowContext(ctx, getRoleByID, id)
+	var role string
+	err := row.Scan(&role)
+	return role, err
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
@@ -47,9 +60,17 @@ FROM users
 WHERE email = $1
 `
 
-func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
+type GetUserByEmailRow struct {
+	ID             uuid.UUID
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
+	Email          string
+	HashedPassword string
+}
+
+func (q *Queries) GetUserByEmail(ctx context.Context, email string) (GetUserByEmailRow, error) {
 	row := q.db.QueryRowContext(ctx, getUserByEmail, email)
-	var i User
+	var i GetUserByEmailRow
 	err := row.Scan(
 		&i.ID,
 		&i.CreatedAt,

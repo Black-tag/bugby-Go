@@ -1,0 +1,10 @@
+p, admin, bug, delete
+p, admin, bug, update
+p, user, bug, read
+p, user, bug, create
+p, admin, /api/bugs, post
+p, admin, /api/bugs/{bugid}, delete
+p, user, /api/bugs, post
+
+g, anand, admin
+g, unni, user
