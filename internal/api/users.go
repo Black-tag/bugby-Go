@@ -34,7 +34,7 @@ type createUserResponse struct {
 // @Tags users
 // @Accept json
 // @Produce json
-// @Success 201 {object} database.User
+// @Success 201 {object} CreateUserResponse
 // @Router /api/users [post]
 // @Security BearerAuth
 func (cfg *APIConfig) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
