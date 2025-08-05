@@ -24,14 +24,14 @@ type CreateBugResponse struct {
 	}
 
 type CreateBugRequest struct {
-	Title        string    `json:"title"`
-	Description  string    `json:"description"`
-	PostedBy     uuid.UUID `json:"posted_by"`
+	Title        string    `json:"title" example:"This is the bug needed"`
+	Description  string    `json:"description" example:"this is descrption"`
+	PostedBy     uuid.UUID `json:"posted_by" example:"9b733930-ef6f-4b01-add2-f410962ec695"`
 }
 
 type UpdateBugRequest struct {
-	Title       *string    `json:"title"`
-	Description *string    `json:"description"`
+	Title       *string    `json:"title" example:"This is the bug needed"`
+	Description *string    `json:"description" example:"this is descrption"`
 		
 		
 }

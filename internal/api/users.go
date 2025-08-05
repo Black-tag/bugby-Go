@@ -14,8 +14,8 @@ import (
 	"github.com/google/uuid"
 )
 type CreateUserRequest struct {
-		Email string `json:"email"`
-		Password string `json:"password"`
+		Email string `json:"email" example:"user@example.com"`
+		Password string `json:"password" example:"mysecret"`
 		
 		
 }
@@ -29,8 +29,8 @@ type CreateUserResponse struct {
     }
 
 type LoginUserRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Email    string `json:"email" example:"user@example.com"`
+	Password string `json:"password" example:"mysecret"`
 		
 }
 type LoginResponse struct {
@@ -42,8 +42,8 @@ type LoginResponse struct {
 	RefreshToken string    `json:"refresh_token"`
 }
 type UpdateRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Email    string `json:"email" example:"user@example.com"`
+	Password string `json:"password" example:"mysecret"`
 }
 
 type UpdateResponse struct {
