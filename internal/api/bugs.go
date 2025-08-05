@@ -23,15 +23,27 @@ type CreateBugResponse struct {
 
 	}
 
+type CreateBugRequest struct {
+	Title        string    `json:"title"`
+	Description  string    `json:"description"`
+	PostedBy     uuid.UUID `json:"posted_by"`
+}
 
+type UpdateBugRequest struct {
+	Title       *string    `json:"title"`
+	Description *string    `json:"description"`
+		
+		
+}
 
 // @Summary Create bugs
 // @Description Existing users can create bugs 
 // @Tags users
 // @Accept json
 // @Produce json
+// @Param request body CreateBugRequest true "bug creation data" 
 // @Success 201 {object} CreateBugResponse
-// @Router /api/bugs [post]
+// @Router /bugs [post]
 // @Security BearerAuth
 func (cfg *APIConfig) CreateBugHandler (w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Content-Type", "application/json")
@@ -41,11 +53,7 @@ func (cfg *APIConfig) CreateBugHandler (w http.ResponseWriter, r *http.Request){
 		utils.RespondWithError(w, http.StatusUnauthorized, "cannot find user ID")
 		return
 	}
-	type CreateBugRequest struct {
-		Title        string    `json:"title"`
-		Description  string    `json:"description"`
-		PostedBy     uuid.UUID `json:"posted_by"`
-	}
+	
 
 	var req CreateBugRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
@@ -79,7 +87,7 @@ func (cfg *APIConfig) CreateBugHandler (w http.ResponseWriter, r *http.Request){
 // @Accept json
 // @Produce json
 // @Success 200 {object} database.Bug
-// @Router /api/bugs [get]
+// @Router /bugs [get]
 // @Security BearerAuth
 func (cfg *APIConfig) GetBugsHandler (w http.ResponseWriter, r *http.Request) {
 	bugs, err := cfg.DB.GetAllBugs(r.Context())
@@ -96,7 +104,7 @@ func (cfg *APIConfig) GetBugsHandler (w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Success 200 {object} database.Bug
-// @Router /api/bugs/{bugid} [get]
+// @Router /bugs/{bugid} [get]
 // @Security BearerAuth
 func (cfg *APIConfig) GetBugByIDHandler (w http.ResponseWriter, r *http.Request) {
 	
@@ -124,8 +132,9 @@ func (cfg *APIConfig) GetBugByIDHandler (w http.ResponseWriter, r *http.Request)
 // @Tags users
 // @Accept json
 // @Produce json
+// @Param request body UpdateBugRequest true "bug updation data" 
 // @Success 200 {object} database.Bug
-// @Router /api/bug/{bugid} [put]
+// @Router /bug/{bugid} [put]
 // @Security BearerAuth
 func (cfg *APIConfig) UpadteBugHandler (w http.ResponseWriter, r *http.Request) {
 	userIDVal := r.Context().Value("userID")
@@ -144,12 +153,7 @@ func (cfg *APIConfig) UpadteBugHandler (w http.ResponseWriter, r *http.Request) 
 		utils.RespondWithError(w, http.StatusBadRequest, "wrong format Id")
 		return
 	}
-	type UpdateBugRequest struct {
-		Title       *string    `json:"title"`
-		Description *string    `json:"description"`
-		
-		
-	}
+	
 	var req UpdateBugRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "invalid request body")
@@ -198,7 +202,7 @@ func toNullString(s *string) sql.NullString {
 // @Accept json
 // @Produce json
 // @Success 204  
-// @Router /api/bugs/{bugid} [delete]
+// @Router /bugs/{bugid} [delete]
 // @Security BearerAuth
 func (cfg *APIConfig) DeleteBugByIDHandler (w http.ResponseWriter, r *http.Request) {
 	userIDVal := r.Context().Value("userID")

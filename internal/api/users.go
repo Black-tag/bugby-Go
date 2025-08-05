@@ -20,7 +20,7 @@ type CreateUserRequest struct {
 		
 }
 
-type createUserResponse struct {
+type CreateUserResponse struct {
         ID        uuid.UUID `json:"id"`
         Email     string    `json:"email"`
         CreatedAt time.Time `json:"created_at"`
@@ -28,14 +28,40 @@ type createUserResponse struct {
 		
     }
 
+type LoginUserRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+		
+}
+type LoginResponse struct {
+	ID           uuid.UUID `json:"id"`
+	Email        string    `json:"email"`
+	CreatedAt    time.Time `json:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
+	Token        string    `json:"token"`
+	RefreshToken string    `json:"refresh_token"`
+}
+type UpdateRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+type UpdateResponse struct {
+	ID uuid.UUID `json:"id"`
+	Email string `json:"email"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
 
 // @Summary Creates a new  user
 // @Description Creates user with Email and Password
 // @Tags users
 // @Accept json
 // @Produce json
+// @Param request body CreateUserRequest true "User creation data"
 // @Success 201 {object} CreateUserResponse
-// @Router /api/users [post]
+// @Router /users [post]
 // @Security BearerAuth
 func (cfg *APIConfig) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	
@@ -67,7 +93,7 @@ func (cfg *APIConfig) CreateUserHandler(w http.ResponseWriter, r *http.Request) 
 		utils.RespondWithError(w, http.StatusInternalServerError, "cannot create user")
 		return
 	 }
-	 utils.RespondWithJSON(w, http.StatusCreated, createUserResponse{
+	 utils.RespondWithJSON(w, http.StatusCreated, CreateUserResponse{
 		ID: user.ID,
 		CreatedAt: user.CreatedAt,
 		UpdatedAt: user.UpdatedAt,
@@ -80,24 +106,13 @@ func (cfg *APIConfig) CreateUserHandler(w http.ResponseWriter, r *http.Request) 
 // @Tags users
 // @Accept json
 // @Produce json
+// @Param request body LoginUserRequest true "user login data"
 // @Success 200 {object} database.User
-// @Router /api/login [post]
+// @Router /login [post]
 // @Security BearerAuth
 func (cfg *APIConfig) LoginUserHandler(w http.ResponseWriter, r *http.Request) {
-	type loginuserRequest struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
-		
-	}
-	type loginResponse struct {
-		ID           uuid.UUID `json:"id"`
-		Email        string    `json:"email"`
-		CreatedAt    time.Time `json:"created_at"`
-		UpdatedAt    time.Time `json:"updated_at"`
-		Token        string    `json:"token"`
-		RefreshToken string    `json:"refresh_token"`
-	}
-	var req loginuserRequest
+	
+	var req LoginUserRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "invalid request budy")
@@ -142,7 +157,7 @@ func (cfg *APIConfig) LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		utils.RespondWithError(w, http.StatusInternalServerError, "cannot store refreshed token")
 	}
-	utils.RespondWithJSON(w, http.StatusOK, loginResponse{
+	utils.RespondWithJSON(w, http.StatusOK, LoginResponse{
 		ID: user.ID,
 		Email: user.Email,
 		CreatedAt: user.CreatedAt,
@@ -158,7 +173,7 @@ func (cfg *APIConfig) LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Success 201 
-// @Router /api/refresh [post]
+// @Router /refresh [post]
 // @Security BearerAuth
 func (cfg *APIConfig) RefreshTokenHandler(w http.ResponseWriter, r *http.Request) {
 	tokenString, err := utils.GetBearerToken(r.Header)
@@ -194,7 +209,7 @@ func (cfg *APIConfig) RefreshTokenHandler(w http.ResponseWriter, r *http.Request
 // @Accept json
 // @Produce json
 // @Success 204  
-// @Router /api/revoke [post]
+// @Router /revoke [post]
 // @Security BearerAuth
 func (cfg *APIConfig) RevokeTokenHandler (w http.ResponseWriter, r *http.Request) {
 	tokenString, ok := r.Context().Value("refreshTokenString").(string)
@@ -216,8 +231,9 @@ func (cfg *APIConfig) RevokeTokenHandler (w http.ResponseWriter, r *http.Request
 // @Tags users
 // @Accept json
 // @Produce json
+// @Param request body UpdateRequest true "User updation data"
 // @Success 201 {object} database.User
-// @Router /api/users [put]
+// @Router /users [put]
 // @Security BearerAuth
 func (cfg *APIConfig) UpdateCredentialsHandler(w http.ResponseWriter, r *http.Request) {
 	
@@ -228,11 +244,8 @@ func (cfg *APIConfig) UpdateCredentialsHandler(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	type updateReq struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
-	}
-	var req updateReq
+	
+	var req UpdateRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "invalid request body")
 		return
@@ -256,12 +269,7 @@ func (cfg *APIConfig) UpdateCredentialsHandler(w http.ResponseWriter, r *http.Re
 		utils.RespondWithError(w, http.StatusInternalServerError, "failed to fetch the updated user")
 		return 
 	}
-	type UpdateResponse struct {
-		ID uuid.UUID `json:"id"`
-		Email string `json:"email"`
-		CreatedAt time.Time `json:"created_at"`
-		UpdatedAt time.Time `json:"updated_at"`
-	}
+	
 	utils.RespondWithJSON(w, http.StatusOK, UpdateResponse{
 		ID: user.ID,
 		Email: user.Email,
