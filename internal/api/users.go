@@ -111,7 +111,7 @@ func (cfg *APIConfig) CreateUserHandler(w http.ResponseWriter, r *http.Request) 
 // @Param request body LoginUserRequest true "user login data"
 // @Success 200 {object} LoginResponse
 // @Failure 400 {object} utils.ErrorResponse "Bad Request - Invalid input"
-// @Failure 401 {object} utils.ErrorResponse "Invalid credentials\" example:{\"code\":401,\"message\":\"invalid email or password\"}
+// @Failure 401 {object} utils.ErrorResponse "Invalid credentials" 
 // @Failure 500 {object} utils.ErrorResponse "Internal Server Error"
 // @Router /login [post]
 // @Security BearerAuth
