@@ -108,7 +108,7 @@ func (cfg *APIConfig) GetBugsHandler (w http.ResponseWriter, r *http.Request) {
 // @Tags bugs
 // @Accept json
 // @Produce json
-// @Param id path string true "Bug ID" example:"87f0ea02-7b24-41bd-8418-0831a019fc87"  
+// @Param bugid path string true "Bug ID" example:"87f0ea02-7b24-41bd-8418-0831a019fc87"  
 // @Success 200 {object} database.Bug
 // @Failure 400 {object} utils.ErrorResponse "Bad Request - Invalid input"
 // @Failure 500 {object} utils.ErrorResponse "Internal Server Error"
@@ -140,7 +140,7 @@ func (cfg *APIConfig) GetBugByIDHandler (w http.ResponseWriter, r *http.Request)
 // @Tags users
 // @Accept json
 // @Produce json
-// @Param id path string true "Bug ID" example:"87f0ea02-7b24-41bd-8418-0831a019fc87"  
+// @Param bugid path string true "Bug ID" example:"87f0ea02-7b24-41bd-8418-0831a019fc87"  
 // @Param request body UpdateBugRequest true "bug updation data" 
 // @Success 200 {object} database.Bug
 // @Failure 400 {object} utils.ErrorResponse "Bad Request - Invalid input"
@@ -213,12 +213,12 @@ func toNullString(s *string) sql.NullString {
 // @Tags bugs
 // @Accept json
 // @Produce json
-// @Success 204 
+// @Success 204 {string} string "No content" 
 // @Failure 400 {object} utils.ErrorResponse "Bad Request - Invalid input"
 // @Failure 401 {object} utils.ErrorResponse "Unauthorized - Missing/invalid credentials"
 // @Failure 403 {object} utils.ErrorResponse "Forbidden - Insufficient permissions"
 // @Failure 500 {object} utils.ErrorResponse "Internal Server Error"
-// @Param id path string true "Bug ID" example:"87f0ea02-7b24-41bd-8418-0831a019fc87" 
+// @Param bugid path string true "Bug ID" example:"87f0ea02-7b24-41bd-8418-0831a019fc87" 
 // @Router /bugs/{bugid} [delete]
 // @Security BearerAuth
 func (cfg *APIConfig) DeleteBugByIDHandler (w http.ResponseWriter, r *http.Request) {
