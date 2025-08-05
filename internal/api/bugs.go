@@ -103,6 +103,7 @@ func (cfg *APIConfig) GetBugsHandler (w http.ResponseWriter, r *http.Request) {
 // @Tags bugs
 // @Accept json
 // @Produce json
+// @Param id path string true "Bug ID" 
 // @Success 200 {object} database.Bug
 // @Router /bugs/{bugid} [get]
 // @Security BearerAuth
@@ -116,7 +117,7 @@ func (cfg *APIConfig) GetBugByIDHandler (w http.ResponseWriter, r *http.Request)
 	}
 	bugID, err := uuid.Parse(bugIDParam)
 	if err != nil {
-		utils.RespondWithError(w, http.StatusBadRequest, "wrong format Id")
+		utils.RespondWithError(w, http.StatusBadRequest, "wrong Id format ")
 		return
 	}
 	bug, err := cfg.DB.GetBugsByID(r.Context(), bugID)
@@ -132,6 +133,7 @@ func (cfg *APIConfig) GetBugByIDHandler (w http.ResponseWriter, r *http.Request)
 // @Tags users
 // @Accept json
 // @Produce json
+// @Param id path string true "Bug ID" 
 // @Param request body UpdateBugRequest true "bug updation data" 
 // @Success 200 {object} database.Bug
 // @Router /bug/{bugid} [put]
@@ -201,7 +203,8 @@ func toNullString(s *string) sql.NullString {
 // @Tags bugs
 // @Accept json
 // @Produce json
-// @Success 204  
+// @Success 204 
+// @Param id path string true "Bug ID" 
 // @Router /bugs/{bugid} [delete]
 // @Security BearerAuth
 func (cfg *APIConfig) DeleteBugByIDHandler (w http.ResponseWriter, r *http.Request) {
