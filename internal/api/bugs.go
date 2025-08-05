@@ -3,13 +3,13 @@ package api
 import (
 	"database/sql"
 	"encoding/json"
+	"log/slog"
 	"net/http"
 	"time"
 
 	"github.com/blacktag/bugby-Go/internal/database"
 	"github.com/blacktag/bugby-Go/internal/utils"
 	"github.com/google/uuid"
-	
 )
 
 
@@ -49,31 +49,43 @@ type UpdateBugRequest struct {
 // @Router /bugs [post]
 // @Security BearerAuth
 func (cfg *APIConfig) CreateBugHandler (w http.ResponseWriter, r *http.Request){
+	slog.Info("handler entered")
+	logger := slog.Default().With(
+		"handler", "CreateBugHandler",
+		"methid", r.Method,
+		"path", r.URL.Path,
+	)
 	w.Header().Set("Content-Type", "application/json")
 	userIDValue := r.Context().Value("userID")
 	userID, ok := userIDValue.(uuid.UUID)
 	if !ok {
+		logger.Error("user id missing in context")
 		utils.RespondWithError(w, http.StatusNotFound, "cannot find user ID")
 		return
 	}
+	logger = logger.With("user_id", userID)
 	
 
 	var req CreateBugRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
+		logger.Error("failed to decode json", "error", err)
 		utils.RespondWithError(w, http.StatusInternalServerError, "error decoding json")
 		return
 	}
+	logger = logger.With("bug_title", req.Title)
 	bug, err := cfg.DB.CreateBug(r.Context(),database.CreateBugParams{
 		Title: req.Title,
 		Description: req.Description,
 		PostedBy: userID,
 	})
 	if err != nil {
+		logger.Error("database operation failed", "error", err)
 		utils.RespondWithError(w, http.StatusInternalServerError, "cannot create bug")
 		return
 	}
-	
+
+	logger.Info("bug created successfully", "bug_id", bug.ID)
 	utils.RespondWithJSON(w, http.StatusCreated, CreateBugResponse{
 		ID: bug.ID,
 		Title: bug.Title,
@@ -82,6 +94,7 @@ func (cfg *APIConfig) CreateBugHandler (w http.ResponseWriter, r *http.Request){
 		CreatedBy: bug.CreatedAt,
 		Updated_at: bug.UpdatedAt,
 	})
+	slog.Info("about to respond")
 	
 }
 // @Summary Get existing  bugs
