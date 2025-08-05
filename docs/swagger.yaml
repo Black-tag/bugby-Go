@@ -1,5 +1,17 @@
 basePath: /api
 definitions:
+  api.CreateBugRequest:
+    properties:
+      description:
+        example: this is descrption
+        type: string
+      posted_by:
+        example: 9b733930-ef6f-4b01-add2-f410962ec695
+        type: string
+      title:
+        example: This is the bug needed
+        type: string
+    type: object
   api.CreateBugResponse:
     properties:
       bug_id:
@@ -11,6 +23,79 @@ definitions:
       posted_by:
         type: string
       title:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  api.CreateUserRequest:
+    properties:
+      email:
+        example: user@example.com
+        type: string
+      password:
+        example: mysecret
+        type: string
+    type: object
+  api.CreateUserResponse:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  api.LoginResponse:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      refresh_token:
+        type: string
+      token:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  api.LoginUserRequest:
+    properties:
+      email:
+        example: user@example.com
+        type: string
+      password:
+        example: mysecret
+        type: string
+    type: object
+  api.UpdateBugRequest:
+    properties:
+      description:
+        example: this is descrption
+        type: string
+      title:
+        example: This is the bug needed
+        type: string
+    type: object
+  api.UpdateRequest:
+    properties:
+      email:
+        example: user@example.com
+        type: string
+      password:
+        example: mysecret
+        type: string
+    type: object
+  api.UpdateResponse:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
         type: string
       updated_at:
         type: string
@@ -30,19 +115,13 @@ definitions:
       updatedAt:
         type: string
     type: object
-  database.User:
+  utils.ErrorResponse:
     properties:
-      createdAt:
-        type: string
-      email:
-        type: string
-      hashedPassword:
-        type: string
-      id:
-        type: string
-      role:
-        type: string
-      updatedAt:
+      code:
+        example: 401
+        type: integer
+      error:
+        example: Inavalid credentials
         type: string
     type: object
 host: localhost:8080
@@ -59,11 +138,23 @@ info:
   title: Bugby API
   version: "1.0"
 paths:
-  /api/bug/{bugid}:
+  /bug/{bugid}:
     put:
       consumes:
       - application/json
       description: Existing users can update their bug
+      parameters:
+      - description: Bug ID
+        in: path
+        name: bugid
+        required: true
+        type: string
+      - description: bug updation data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.UpdateBugRequest'
       produces:
       - application/json
       responses:
@@ -71,12 +162,24 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/database.Bug'
+        "400":
+          description: Bad Request - Invalid input
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "401":
+          description: Unauthorized - Missing/invalid credentials
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Update an existing  bug
       tags:
       - users
-  /api/bugs:
+  /bugs:
     get:
       consumes:
       - application/json
@@ -88,6 +191,14 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/database.Bug'
+        "400":
+          description: Bad Request - Invalid input
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Get existing  bugs
@@ -97,6 +208,13 @@ paths:
       consumes:
       - application/json
       description: Existing users can create bugs
+      parameters:
+      - description: bug creation data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.CreateBugRequest'
       produces:
       - application/json
       responses:
@@ -104,21 +222,57 @@ paths:
           description: Created
           schema:
             $ref: '#/definitions/api.CreateBugResponse'
+        "400":
+          description: Bad Request - Invalid input
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "404":
+          description: Not Found - Resource doesn't exist
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Create bugs
       tags:
       - users
-  /api/bugs/{bugid}:
+  /bugs/{bugid}:
     delete:
       consumes:
       - application/json
       description: admin can delete bugs using their id
+      parameters:
+      - description: Bug ID
+        in: path
+        name: bugid
+        required: true
+        type: string
       produces:
       - application/json
       responses:
         "204":
-          description: No Content
+          description: No content
+          schema:
+            type: string
+        "400":
+          description: Bad Request - Invalid input
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "401":
+          description: Unauthorized - Missing/invalid credentials
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "403":
+          description: Forbidden - Insufficient permissions
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Delete an existing  user
@@ -128,6 +282,12 @@ paths:
       consumes:
       - application/json
       description: Existing users can update their info using email and password
+      parameters:
+      - description: Bug ID
+        in: path
+        name: bugid
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -135,29 +295,56 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/database.Bug'
+        "400":
+          description: Bad Request - Invalid input
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
       security:
       - BearerAuth: []
       summary: GET bug by id
       tags:
       - bugs
-  /api/login:
+  /login:
     post:
       consumes:
       - application/json
       description: Existing users can login using email and password
+      parameters:
+      - description: user login data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.LoginUserRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/database.User'
+            $ref: '#/definitions/api.LoginResponse'
+        "400":
+          description: Bad Request - Invalid input
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "401":
+          description: Invalid credentials
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Login an existing  user
       tags:
       - users
-  /api/refresh:
+  /refresh:
     post:
       consumes:
       - application/json
@@ -167,12 +354,24 @@ paths:
       responses:
         "201":
           description: Created
+        "400":
+          description: Bad Request - Invalid input
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "401":
+          description: Unauthorized - Missing/invalid credentials
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Refresh jwtoken of an existing user
       tags:
       - refreshTokens
-  /api/revoke:
+  /revoke:
     post:
       consumes:
       - application/json
@@ -182,23 +381,50 @@ paths:
       responses:
         "204":
           description: No Content
+        "400":
+          description: Bad Request - Invalid input
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "401":
+          description: Unauthorized - Missing/invalid credentials
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Revoke user token
       tags:
       - users
-  /api/users:
+  /users:
     post:
       consumes:
       - application/json
       description: Creates user with Email and Password
+      parameters:
+      - description: User creation data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.CreateUserRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/database.User'
+            $ref: '#/definitions/api.CreateUserResponse'
+        "400":
+          description: Bad Request - Invalid input
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Creates a new  user
@@ -208,13 +434,32 @@ paths:
       consumes:
       - application/json
       description: Existing users can update their info using email and password
+      parameters:
+      - description: User updation data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.UpdateRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/database.User'
+            $ref: '#/definitions/api.UpdateResponse'
+        "400":
+          description: Bad Request - Invalid input
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "401":
+          description: Unauthorized - Missing/invalid credentials
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Update an existing  user
