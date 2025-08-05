@@ -43,6 +43,9 @@ type UpdateBugRequest struct {
 // @Produce json
 // @Param request body CreateBugRequest true "bug creation data" 
 // @Success 201 {object} CreateBugResponse
+// @Failure 400 {object} utils.ErrorResponse "Bad Request - Invalid input"
+// @Failure 404 {object} utils.ErrorResponse "Not Found - Resource doesn't exist"
+// @Failure 500 {object} utils.ErrorResponse "Internal Server Error"
 // @Router /bugs [post]
 // @Security BearerAuth
 func (cfg *APIConfig) CreateBugHandler (w http.ResponseWriter, r *http.Request){
@@ -50,7 +53,7 @@ func (cfg *APIConfig) CreateBugHandler (w http.ResponseWriter, r *http.Request){
 	userIDValue := r.Context().Value("userID")
 	userID, ok := userIDValue.(uuid.UUID)
 	if !ok {
-		utils.RespondWithError(w, http.StatusUnauthorized, "cannot find user ID")
+		utils.RespondWithError(w, http.StatusNotFound, "cannot find user ID")
 		return
 	}
 	
@@ -87,6 +90,8 @@ func (cfg *APIConfig) CreateBugHandler (w http.ResponseWriter, r *http.Request){
 // @Accept json
 // @Produce json
 // @Success 200 {object} database.Bug
+// @Failure 400 {object} utils.ErrorResponse "Bad Request - Invalid input"
+// @Failure 500 {object} utils.ErrorResponse "Internal Server Error"
 // @Router /bugs [get]
 // @Security BearerAuth
 func (cfg *APIConfig) GetBugsHandler (w http.ResponseWriter, r *http.Request) {
@@ -105,6 +110,8 @@ func (cfg *APIConfig) GetBugsHandler (w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Param id path string true "Bug ID" 
 // @Success 200 {object} database.Bug
+// @Failure 400 {object} utils.ErrorResponse "Bad Request - Invalid input"
+// @Failure 500 {object} utils.ErrorResponse "Internal Server Error"
 // @Router /bugs/{bugid} [get]
 // @Security BearerAuth
 func (cfg *APIConfig) GetBugByIDHandler (w http.ResponseWriter, r *http.Request) {
@@ -136,6 +143,9 @@ func (cfg *APIConfig) GetBugByIDHandler (w http.ResponseWriter, r *http.Request)
 // @Param id path string true "Bug ID" 
 // @Param request body UpdateBugRequest true "bug updation data" 
 // @Success 200 {object} database.Bug
+// @Failure 400 {object} utils.ErrorResponse "Bad Request - Invalid input"
+// @Failure 401 {object} utils.ErrorResponse "Unauthorized - Missing/invalid credentials"
+// @Failure 500 {object} utils.ErrorResponse "Internal Server Error"
 // @Router /bug/{bugid} [put]
 // @Security BearerAuth
 func (cfg *APIConfig) UpadteBugHandler (w http.ResponseWriter, r *http.Request) {
@@ -204,6 +214,10 @@ func toNullString(s *string) sql.NullString {
 // @Accept json
 // @Produce json
 // @Success 204 
+// @Failure 400 {object} utils.ErrorResponse "Bad Request - Invalid input"
+// @Failure 401 {object} utils.ErrorResponse "Unauthorized - Missing/invalid credentials"
+// @Failure 403 {object} utils.ErrorResponse "Forbidden - Insufficient permissions"
+// @Failure 500 {object} utils.ErrorResponse "Internal Server Error"
 // @Param id path string true "Bug ID" 
 // @Router /bugs/{bugid} [delete]
 // @Security BearerAuth

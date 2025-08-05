@@ -61,6 +61,8 @@ type UpdateResponse struct {
 // @Produce json
 // @Param request body CreateUserRequest true "User creation data"
 // @Success 201 {object} CreateUserResponse
+// @Failure 400 {object} utils.ErrorResponse "Bad Request - Invalid input"
+// @Failure 500 {object} utils.ErrorResponse "Internal Server Error"
 // @Router /users [post]
 // @Security BearerAuth
 func (cfg *APIConfig) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -107,7 +109,10 @@ func (cfg *APIConfig) CreateUserHandler(w http.ResponseWriter, r *http.Request) 
 // @Accept json
 // @Produce json
 // @Param request body LoginUserRequest true "user login data"
-// @Success 200 {object} database.User
+// @Success 200 {object} LoginResponse
+// @Failure 400 {object} utils.ErrorResponse "Bad Request - Invalid input"
+// @Failure 401 {object} utils.ErrorResponse "Unauthorized - Missing/invalid credentials"
+// @Failure 500 {object} utils.ErrorResponse "Internal Server Error"
 // @Router /login [post]
 // @Security BearerAuth
 func (cfg *APIConfig) LoginUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -172,7 +177,10 @@ func (cfg *APIConfig) LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 // @Tags refreshTokens
 // @Accept json
 // @Produce json
-// @Success 201 
+// @Success 201
+// @Failure 400 {object} utils.ErrorResponse "Bad Request - Invalid input"
+// @Failure 401 {object} utils.ErrorResponse "Unauthorized - Missing/invalid credentials"
+// @Failure 500 {object} utils.ErrorResponse "Internal Server Error"
 // @Router /refresh [post]
 // @Security BearerAuth
 func (cfg *APIConfig) RefreshTokenHandler(w http.ResponseWriter, r *http.Request) {
@@ -208,7 +216,10 @@ func (cfg *APIConfig) RefreshTokenHandler(w http.ResponseWriter, r *http.Request
 // @Tags users
 // @Accept json
 // @Produce json
-// @Success 204  
+// @Success 204 
+// @Failure 400 {object} utils.ErrorResponse "Bad Request - Invalid input"
+// @Failure 401 {object} utils.ErrorResponse "Unauthorized - Missing/invalid credentials"
+// @Failure 500 {object} utils.ErrorResponse "Internal Server Error"
 // @Router /revoke [post]
 // @Security BearerAuth
 func (cfg *APIConfig) RevokeTokenHandler (w http.ResponseWriter, r *http.Request) {
@@ -232,7 +243,10 @@ func (cfg *APIConfig) RevokeTokenHandler (w http.ResponseWriter, r *http.Request
 // @Accept json
 // @Produce json
 // @Param request body UpdateRequest true "User updation data"
-// @Success 201 {object} database.User
+// @Success 201 {object} UpdateResponse
+// @Failure 400 {object} utils.ErrorResponse "Bad Request - Invalid input"
+// @Failure 401 {object} utils.ErrorResponse "Unauthorized - Missing/invalid credentials"
+// @Failure 500 {object} utils.ErrorResponse "Internal Server Error"
 // @Router /users [put]
 // @Security BearerAuth
 func (cfg *APIConfig) UpdateCredentialsHandler(w http.ResponseWriter, r *http.Request) {
