@@ -5,15 +5,17 @@ import (
 	"log"
 	"net/http"
 )
-
+type ErrorResponse struct {
+    Code    int    `json:"code" example:"401"`
+    Message string `json:"error" example:"Inavalid credentials"`
+}
 
 func RespondWithError(w http.ResponseWriter, code int, msg string) {
-    type errorResponse struct {
-        Error string `json:"error"`
-    }
     
-    RespondWithJSON(w, code, errorResponse{
-        Error: msg,
+    
+    RespondWithJSON(w, code, ErrorResponse{
+        Code: code,
+        Message: msg,
     })
 }
 func RespondWithJSON(w http.ResponseWriter, code int, payload interface{}) {

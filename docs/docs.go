@@ -24,7 +24,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/bug/{bugid}": {
+        "/bug/{bugid}": {
             "put": {
                 "security": [
                     {
@@ -42,17 +42,53 @@ const docTemplate = `{
                     "users"
                 ],
                 "summary": "Update an existing  bug",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bug ID",
+                        "name": "bugid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "bug updation data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.UpdateBugRequest"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/database.Bug"
                         }
+                    },
+                    "400": {
+                        "description": "Bad Request - Invalid input",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - Missing/invalid credentials",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
                     }
                 }
             }
         },
-        "/api/bugs": {
+        "/bugs": {
             "get": {
                 "security": [
                     {
@@ -76,6 +112,18 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/database.Bug"
                         }
+                    },
+                    "400": {
+                        "description": "Bad Request - Invalid input",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
                     }
                 }
             },
@@ -96,17 +144,46 @@ const docTemplate = `{
                     "users"
                 ],
                 "summary": "Create bugs",
+                "parameters": [
+                    {
+                        "description": "bug creation data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.CreateBugRequest"
+                        }
+                    }
+                ],
                 "responses": {
                     "201": {
                         "description": "Created",
                         "schema": {
                             "$ref": "#/definitions/api.CreateBugResponse"
                         }
+                    },
+                    "400": {
+                        "description": "Bad Request - Invalid input",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found - Resource doesn't exist",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
                     }
                 }
             }
         },
-        "/api/bugs/{bugid}": {
+        "/bugs/{bugid}": {
             "get": {
                 "security": [
                     {
@@ -124,11 +201,32 @@ const docTemplate = `{
                     "bugs"
                 ],
                 "summary": "GET bug by id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bug ID",
+                        "name": "bugid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/database.Bug"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request - Invalid input",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
                         }
                     }
                 }
@@ -150,14 +248,50 @@ const docTemplate = `{
                     "bugs"
                 ],
                 "summary": "Delete an existing  user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bug ID",
+                        "name": "bugid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "204": {
-                        "description": "No Content"
+                        "description": "No content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request - Invalid input",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - Missing/invalid credentials",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - Insufficient permissions",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
                     }
                 }
             }
         },
-        "/api/login": {
+        "/login": {
             "post": {
                 "security": [
                     {
@@ -175,17 +309,46 @@ const docTemplate = `{
                     "users"
                 ],
                 "summary": "Login an existing  user",
+                "parameters": [
+                    {
+                        "description": "user login data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.LoginUserRequest"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/database.User"
+                            "$ref": "#/definitions/api.LoginResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request - Invalid input",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid credentials",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
                         }
                     }
                 }
             }
         },
-        "/api/refresh": {
+        "/refresh": {
             "post": {
                 "security": [
                     {
@@ -206,11 +369,29 @@ const docTemplate = `{
                 "responses": {
                     "201": {
                         "description": "Created"
+                    },
+                    "400": {
+                        "description": "Bad Request - Invalid input",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - Missing/invalid credentials",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
                     }
                 }
             }
         },
-        "/api/revoke": {
+        "/revoke": {
             "post": {
                 "security": [
                     {
@@ -231,11 +412,29 @@ const docTemplate = `{
                 "responses": {
                     "204": {
                         "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request - Invalid input",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - Missing/invalid credentials",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
                     }
                 }
             }
         },
-        "/api/users": {
+        "/users": {
             "put": {
                 "security": [
                     {
@@ -253,11 +452,40 @@ const docTemplate = `{
                     "users"
                 ],
                 "summary": "Update an existing  user",
+                "parameters": [
+                    {
+                        "description": "User updation data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.UpdateRequest"
+                        }
+                    }
+                ],
                 "responses": {
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/database.User"
+                            "$ref": "#/definitions/api.UpdateResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request - Invalid input",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - Missing/invalid credentials",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
                         }
                     }
                 }
@@ -279,11 +507,34 @@ const docTemplate = `{
                     "users"
                 ],
                 "summary": "Creates a new  user",
+                "parameters": [
+                    {
+                        "description": "User creation data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.CreateUserRequest"
+                        }
+                    }
+                ],
                 "responses": {
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/database.User"
+                            "$ref": "#/definitions/api.CreateUserResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request - Invalid input",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
                         }
                     }
                 }
@@ -291,6 +542,23 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "api.CreateBugRequest": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "example": "this is descrption"
+                },
+                "posted_by": {
+                    "type": "string",
+                    "example": "9b733930-ef6f-4b01-add2-f410962ec695"
+                },
+                "title": {
+                    "type": "string",
+                    "example": "This is the bug needed"
+                }
+            }
+        },
         "api.CreateBugResponse": {
             "type": "object",
             "properties": {
@@ -307,6 +575,115 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "title": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "api.CreateUserRequest": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "user@example.com"
+                },
+                "password": {
+                    "type": "string",
+                    "example": "mysecret"
+                }
+            }
+        },
+        "api.CreateUserResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "api.LoginResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "refresh_token": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "api.LoginUserRequest": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "user@example.com"
+                },
+                "password": {
+                    "type": "string",
+                    "example": "mysecret"
+                }
+            }
+        },
+        "api.UpdateBugRequest": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "example": "this is descrption"
+                },
+                "title": {
+                    "type": "string",
+                    "example": "This is the bug needed"
+                }
+            }
+        },
+        "api.UpdateRequest": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "user@example.com"
+                },
+                "password": {
+                    "type": "string",
+                    "example": "mysecret"
+                }
+            }
+        },
+        "api.UpdateResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
                     "type": "string"
                 },
                 "updated_at": {
@@ -337,26 +714,16 @@ const docTemplate = `{
                 }
             }
         },
-        "database.User": {
+        "utils.ErrorResponse": {
             "type": "object",
             "properties": {
-                "createdAt": {
-                    "type": "string"
+                "code": {
+                    "type": "integer",
+                    "example": 401
                 },
-                "email": {
-                    "type": "string"
-                },
-                "hashedPassword": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "role": {
-                    "type": "string"
-                },
-                "updatedAt": {
-                    "type": "string"
+                "error": {
+                    "type": "string",
+                    "example": "Inavalid credentials"
                 }
             }
         }

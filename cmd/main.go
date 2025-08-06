@@ -18,6 +18,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"time"
@@ -32,8 +33,6 @@ import (
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	httpswagger "github.com/swaggo/http-swagger"
-	_ "github.com/blacktag/bugby-Go/docs"
-	
 	// "github.com/ydb-platform/ydb-go-sdk/v3/ratelimiter"
 )
 
@@ -64,7 +63,8 @@ func main() {
 
 
 
-	
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	slog.SetDefault(logger)
 	
 	
 
@@ -78,7 +78,7 @@ func main() {
 	protected := authMiddleware(middleware.Authorization(enforcer)(http.HandlerFunc(cfg.DeleteBugByIDHandler)))
 	mux.Handle("POST /api/bugs", authMiddleware(http.HandlerFunc(cfg.CreateBugHandler)))
 	mux.Handle("DELETE /api/bugs/{bugid}", protected)
-	mux.Handle("POST /api/bugs/{bugid}", authMiddleware(http.HandlerFunc(cfg.UpadteBugHandler)))
+	mux.Handle("POST /api/bugs/{bugid}", authMiddleware(http.HandlerFunc(cfg.UpdateBugHandler)))
 	mux.HandleFunc("GET /api/bugs/{bugid}", cfg.GetBugByIDHandler)
 	mux.HandleFunc("GET /api/bugs", cfg.GetBugsHandler)
 	mux.HandleFunc("POST /api/users", cfg.CreateUserHandler)
@@ -88,7 +88,10 @@ func main() {
 	mux.Handle("PUT /api/users", authMiddleware(http.HandlerFunc(cfg.UpdateCredentialsHandler)))
 	mux.HandleFunc("/swagger/", httpswagger.WrapHandler)
 
-
+	mux.HandleFunc("GET /test", func(w http.ResponseWriter, r *http.Request) {
+    slog.Info("TEST LOG MESSAGE", "key", "value")
+    w.Write([]byte("Check console logs"))
+})
 
 
 
@@ -96,33 +99,17 @@ func main() {
 	muxWithLimiter := ratelimiter.Limit(mux)
 
 	
-
-
-
-
-
-
-
-
-
-
-
-
-
 	server := &http.Server{
 		Addr: ":8080",
 		Handler: muxWithLimiter,
 	}
 
+	slog.Info("server started", "port", 8080)
 	fmt.Println("🌐 starting the server on: http://localhost:8080...")
 	err = server.ListenAndServe()
 	if err != nil {
 		fmt.Printf("Server failed: %v\n", err)
 	}
-
-
-
-
 
 }
 
