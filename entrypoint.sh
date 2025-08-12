@@ -1,12 +1,11 @@
 #!/bin/sh
 set -e
-echo "📋 Environment variables:"
-printenv | grep -E 'DATABASE_URL|PG'
 
-# Use explicit Railway variables if DATABASE_URL not set
-DB_URL=${DATABASE_URL:-"postgresql://${PGUSER}:${PGPASSWORD}@${PGHOST}:${PGPORT}/${PGDATABASE}?sslmode=require"}
 
-DB_URL=${DATABASE_URL:-"postgresql://postgres:postgres@db:5432/bugby?sslmode=disable"}
+
+
+
+DB_URL="postgresql://postgres:postgres@db:5432/bugby?sslmode=disable"
 echo "🔌 Using database URL: ${DB_URL}"
 echo "🔄 Waiting for Postgres to be ready..."
 until psql "postgresql://postgres:postgres@db:5432/bugby?sslmode=disable" -c '\q' > /dev/null 2>&1; do
