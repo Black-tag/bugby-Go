@@ -23,7 +23,6 @@ import (
 	"os"
 	"time"
 
-	
 	"github.com/blacktag/bugby-Go/internal/api"
 	"github.com/blacktag/bugby-Go/internal/database"
 	"github.com/blacktag/bugby-Go/internal/middleware"
@@ -35,10 +34,6 @@ import (
 	httpswagger "github.com/swaggo/http-swagger"
 	// "github.com/ydb-platform/ydb-go-sdk/v3/ratelimiter"
 )
-
-
-
-
 
 func main() {
 
@@ -53,7 +48,7 @@ func main() {
 	secret := os.Getenv("SECRET")
 
 	cfg := api.APIConfig{
-		DB: dbQueries,
+		DB:     dbQueries,
 		SECRET: secret,
 	}
 	enforcer, err := SetupCasbin()
@@ -61,17 +56,11 @@ func main() {
 		log.Fatal("failed to setup casbin: %w", err)
 	}
 
-
-
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	slog.SetDefault(logger)
-	
-	
 
-	 
-	authMiddleware := middleware.Authenticate1(cfg.SECRET, cfg.DB)
-	authMiddleware2 := middleware.RevokeTokenAthenticate( cfg.DB)
-
+	authMiddleware := middleware.Authenticate(cfg.SECRET, cfg.DB)
+	authMiddleware2 := middleware.RevokeTokenAthenticate(cfg.DB)
 
 	mux := http.NewServeMux()
 
@@ -87,20 +76,18 @@ func main() {
 	mux.Handle("POST /api/revoke", authMiddleware2(http.HandlerFunc(cfg.RevokeTokenHandler)))
 	mux.Handle("PUT /api/users", authMiddleware(http.HandlerFunc(cfg.UpdateCredentialsHandler)))
 	mux.HandleFunc("/swagger/", httpswagger.WrapHandler)
+	mux.HandleFunc("GET /api/users", cfg.GetUsersHandler)
 
 	mux.HandleFunc("GET /test", func(w http.ResponseWriter, r *http.Request) {
-    slog.Info("TEST LOG MESSAGE", "key", "value")
-    w.Write([]byte("Check console logs"))
-})
+		slog.Info("TEST LOG MESSAGE", "key", "value")
+		w.Write([]byte("Check console logs"))
+	})
 
-
-
-	ratelimiter := middleware.NewRateLimiter(5,10,time.Minute)
+	ratelimiter := middleware.NewRateLimiter(5, 10, time.Minute)
 	muxWithLimiter := ratelimiter.Limit(mux)
 
-	
 	server := &http.Server{
-		Addr: ":8080",
+		Addr:    ":8080",
 		Handler: muxWithLimiter,
 	}
 
@@ -113,25 +100,24 @@ func main() {
 
 }
 
-
 func SetupCasbin() (*casbin.Enforcer, error) {
-		m, err := model.NewModelFromFile("rbac_model.conf")
-		if err != nil {
-			
-			return nil, fmt.Errorf("cannot load model for enforcer: %w", err)
-		}	
+	m, err := model.NewModelFromFile("rbac_model.conf")
+	if err != nil {
 
-		a := fileadapter.NewAdapter("rbac_policy.csv")
-
-		enforcer, err := casbin.NewEnforcer(m, a)
-		if err != nil {
-			
-			return nil, fmt.Errorf("cannot create enforcer: %w", err)
-		} 
-		err = enforcer.LoadPolicy()
-		if err != nil {
-			
-			return nil, fmt.Errorf("cannot load policy: %w", err)
-		}
-		return enforcer, nil
+		return nil, fmt.Errorf("cannot load model for enforcer: %w", err)
 	}
+
+	a := fileadapter.NewAdapter("rbac_policy.csv")
+
+	enforcer, err := casbin.NewEnforcer(m, a)
+	if err != nil {
+
+		return nil, fmt.Errorf("cannot create enforcer: %w", err)
+	}
+	err = enforcer.LoadPolicy()
+	if err != nil {
+
+		return nil, fmt.Errorf("cannot load policy: %w", err)
+	}
+	return enforcer, nil
+}
