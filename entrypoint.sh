@@ -1,8 +1,7 @@
 #!/bin/sh
 set -e
 
-echo "📋 Environment variables:"
-env | busybox grep -E 'DATABASE_URL|PG'
+
 
 
 DB_URL=${DATABASE_URL:-"postgresql://${PGUSER}:${PGPASSWORD}@${PGHOST}:${PGPORT}/${PGDATABASE}?sslmode=require"}
