@@ -9,49 +9,44 @@ import (
 
 	"github.com/blacktag/bugby-Go/internal/database"
 	"github.com/blacktag/bugby-Go/internal/utils"
-	
 
 	// "github.com/casbin/casbin/v2/log"
 	"github.com/google/uuid"
 )
 
-
 type CreateBugResponse struct {
-		ID           uuid.UUID `json:"bug_id"`
-		Title        string    `json:"title"`
-		Description  string    `json:"description"`
-		PostedBy     uuid.UUID `json:"posted_by"`
-		CreatedBy    time.Time `json:"created_at"`
-		Updated_at   time.Time `json:"updated_at"`
-
-	}
+	ID          uuid.UUID `json:"bug_id"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	PostedBy    uuid.UUID `json:"posted_by"`
+	CreatedBy   time.Time `json:"created_at"`
+	Updated_at  time.Time `json:"updated_at"`
+}
 
 type CreateBugRequest struct {
-	Title        string    `json:"title" example:"This is the bug needed"`
-	Description  string    `json:"description" example:"this is descrption"`
-	PostedBy     uuid.UUID `json:"posted_by" example:"9b733930-ef6f-4b01-add2-f410962ec695"`
+	Title       string    `json:"title" example:"This is the bug needed"`
+	Description string    `json:"description" example:"this is descrption"`
+	PostedBy    uuid.UUID `json:"posted_by" example:"9b733930-ef6f-4b01-add2-f410962ec695"`
 }
 
 type UpdateBugRequest struct {
-	Title       *string    `json:"title" example:"This is the bug needed"`
-	Description *string    `json:"description" example:"this is descrption"`
-		
-		
+	Title       *string `json:"title" example:"This is the bug needed"`
+	Description *string `json:"description" example:"this is descrption"`
 }
 
 // @Summary Create bugs
-// @Description Existing users can create bugs 
+// @Description Existing users can create bugs
 // @Tags users
 // @Accept json
 // @Produce json
-// @Param request body CreateBugRequest true "bug creation data" 
+// @Param request body CreateBugRequest true "bug creation data"
 // @Success 201 {object} CreateBugResponse
 // @Failure 400 {object} utils.ErrorResponse "Bad Request - Invalid input"
 // @Failure 404 {object} utils.ErrorResponse "Not Found - Resource doesn't exist"
 // @Failure 500 {object} utils.ErrorResponse "Internal Server Error"
 // @Router /bugs [post]
 // @Security BearerAuth
-func (cfg *APIConfig) CreateBugHandler (w http.ResponseWriter, r *http.Request){
+func (cfg *APIConfig) CreateBugHandler(w http.ResponseWriter, r *http.Request) {
 	slog.Info("handler entered")
 	logger := slog.Default().With(
 		"handler", "CreateBugHandler",
@@ -67,7 +62,6 @@ func (cfg *APIConfig) CreateBugHandler (w http.ResponseWriter, r *http.Request){
 		return
 	}
 	logger = logger.With("user_id", userID)
-	
 
 	var req CreateBugRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
@@ -77,10 +71,10 @@ func (cfg *APIConfig) CreateBugHandler (w http.ResponseWriter, r *http.Request){
 		return
 	}
 	logger = logger.With("bug_title", req.Title)
-	bug, err := cfg.DB.CreateBug(r.Context(),database.CreateBugParams{
-		Title: req.Title,
+	bug, err := cfg.DB.CreateBug(r.Context(), database.CreateBugParams{
+		Title:       req.Title,
 		Description: req.Description,
-		PostedBy: userID,
+		PostedBy:    userID,
 	})
 	if err != nil {
 		logger.Error("database operation failed", "error", err)
@@ -90,16 +84,17 @@ func (cfg *APIConfig) CreateBugHandler (w http.ResponseWriter, r *http.Request){
 
 	logger.Info("bug created successfully", "bug_id", bug.ID)
 	utils.RespondWithJSON(w, http.StatusCreated, CreateBugResponse{
-		ID: bug.ID,
-		Title: bug.Title,
+		ID:          bug.ID,
+		Title:       bug.Title,
 		Description: bug.Description,
-		PostedBy: bug.PostedBy,
-		CreatedBy: bug.CreatedAt,
-		Updated_at: bug.UpdatedAt,
+		PostedBy:    bug.PostedBy,
+		CreatedBy:   bug.CreatedAt,
+		Updated_at:  bug.UpdatedAt,
 	})
 	slog.Info("about to respond")
-	
+
 }
+
 // @Summary Get existing  bugs
 // @Description  users can get all existing bugs
 // @Tags users
@@ -110,7 +105,7 @@ func (cfg *APIConfig) CreateBugHandler (w http.ResponseWriter, r *http.Request){
 // @Failure 500 {object} utils.ErrorResponse "Internal Server Error"
 // @Router /bugs [get]
 // @Security BearerAuth
-func (cfg *APIConfig) GetBugsHandler (w http.ResponseWriter, r *http.Request) {
+func (cfg *APIConfig) GetBugsHandler(w http.ResponseWriter, r *http.Request) {
 	bugs, err := cfg.DB.GetAllBugs(r.Context())
 	if err != nil {
 		utils.RespondWithError(w, http.StatusInternalServerError, "couldnt fetch bugs")
@@ -124,13 +119,13 @@ func (cfg *APIConfig) GetBugsHandler (w http.ResponseWriter, r *http.Request) {
 // @Tags bugs
 // @Accept json
 // @Produce json
-// @Param bugid path string true "Bug ID" example:"87f0ea02-7b24-41bd-8418-0831a019fc87"  
+// @Param bugid path string true "Bug ID" example:"87f0ea02-7b24-41bd-8418-0831a019fc87"
 // @Success 200 {object} database.Bug
 // @Failure 400 {object} utils.ErrorResponse "Bad Request - Invalid input"
 // @Failure 500 {object} utils.ErrorResponse "Internal Server Error"
 // @Router /bugs/{bugid} [get]
 // @Security BearerAuth
-func (cfg *APIConfig) GetBugByIDHandler (w http.ResponseWriter, r *http.Request) {
+func (cfg *APIConfig) GetBugByIDHandler(w http.ResponseWriter, r *http.Request) {
 	slog.Info("Handler started")
 	logger := slog.Default().With(
 		"handler", "CreateBugHandler",
@@ -138,7 +133,6 @@ func (cfg *APIConfig) GetBugByIDHandler (w http.ResponseWriter, r *http.Request)
 		"path", r.URL.Path,
 	)
 	bugIDParam := r.PathValue("bugid")
-	
 
 	if bugIDParam == "" {
 		logger.Info("no id given by user")
@@ -169,18 +163,18 @@ func (cfg *APIConfig) GetBugByIDHandler (w http.ResponseWriter, r *http.Request)
 // @Tags users
 // @Accept json
 // @Produce json
-// @Param bugid path string true "Bug ID" example:"87f0ea02-7b24-41bd-8418-0831a019fc87"  
-// @Param request body UpdateBugRequest true "bug updation data" 
+// @Param bugid path string true "Bug ID" example:"87f0ea02-7b24-41bd-8418-0831a019fc87"
+// @Param request body UpdateBugRequest true "bug updation data"
 // @Success 200 {object} database.Bug
 // @Failure 400 {object} utils.ErrorResponse "Bad Request - Invalid input"
 // @Failure 401 {object} utils.ErrorResponse "Unauthorized - Missing/invalid credentials"
 // @Failure 500 {object} utils.ErrorResponse "Internal Server Error"
 // @Router /bug/{bugid} [put]
 // @Security BearerAuth
-func (cfg *APIConfig) UpdateBugHandler (w http.ResponseWriter, r *http.Request) {
+func (cfg *APIConfig) UpdateBugHandler(w http.ResponseWriter, r *http.Request) {
 	logger := slog.With(
 		"handler", "UpdateBugHandler",
-		"method", r.Method, 
+		"method", r.Method,
 		"path", r.URL.Path,
 	)
 	logger.Info("Entered handler")
@@ -193,7 +187,7 @@ func (cfg *APIConfig) UpdateBugHandler (w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	bugParam := r.PathValue("bugid")
-	
+
 	if bugParam == "" {
 		logger.Info("no bugID in request")
 		utils.RespondWithError(w, http.StatusBadRequest, " no bugID given ")
@@ -206,18 +200,17 @@ func (cfg *APIConfig) UpdateBugHandler (w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	logger = logger.With("bugId", bugID)
-	
+
 	var req UpdateBugRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		logger.Error("given request body in wrong format", "error", err)
 		utils.RespondWithError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
-	
-	
+
 	bug, err := cfg.DB.GetBugsByID(r.Context(), bugID)
 	logger.Info("doing database operation")
-	if err != nil { 
+	if err != nil {
 		logger.Error("databse error bug not found in database", "error", err)
 		utils.RespondWithError(w, http.StatusInternalServerError, "no bug  found with the id")
 		return
@@ -231,13 +224,12 @@ func (cfg *APIConfig) UpdateBugHandler (w http.ResponseWriter, r *http.Request) 
 
 	}
 	params := database.UpdateBugByIDParams{
-		ID: bugID,
-		Title: toNullString(req.Title),
+		ID:          bugID,
+		Title:       toNullString(req.Title),
 		Description: toNullString(req.Description),
-		
 	}
 	logger = logger.With("params", params)
-	
+
 	err = cfg.DB.UpdateBugByID(r.Context(), params)
 	logger.Info("doing database updation")
 	if err != nil {
@@ -261,20 +253,21 @@ func toNullString(s *string) sql.NullString {
 	}
 	return sql.NullString{String: *s, Valid: true}
 }
+
 // @Summary Delete an existing  user
 // @Description admin can delete bugs using their id
 // @Tags bugs
 // @Accept json
 // @Produce json
-// @Success 204 {string} string "No content" 
+// @Success 204 {string} string "No content"
 // @Failure 400 {object} utils.ErrorResponse "Bad Request - Invalid input"
 // @Failure 401 {object} utils.ErrorResponse "Unauthorized - Missing/invalid credentials"
 // @Failure 403 {object} utils.ErrorResponse "Forbidden - Insufficient permissions"
 // @Failure 500 {object} utils.ErrorResponse "Internal Server Error"
-// @Param bugid path string true "Bug ID" example:"87f0ea02-7b24-41bd-8418-0831a019fc87" 
+// @Param bugid path string true "Bug ID" example:"87f0ea02-7b24-41bd-8418-0831a019fc87"
 // @Router /bugs/{bugid} [delete]
 // @Security BearerAuth
-func (cfg *APIConfig) DeleteBugByIDHandler (w http.ResponseWriter, r *http.Request) {
+func (cfg *APIConfig) DeleteBugByIDHandler(w http.ResponseWriter, r *http.Request) {
 	logger := slog.Default().With(
 		"handler", "DeleteBugByIDHandler",
 		"method", r.Method,
@@ -292,14 +285,14 @@ func (cfg *APIConfig) DeleteBugByIDHandler (w http.ResponseWriter, r *http.Reque
 	user, ok := userVal.(database.User)
 	if !ok {
 		logger.Error("user data not found in contest")
-    	utils.RespondWithError(w, http.StatusUnauthorized, "user not in context")
-    	return
+		utils.RespondWithError(w, http.StatusUnauthorized, "user not in context")
+		return
 	}
 
 	if user.Role != "admin" {
 		logger.Error("user has no admin status, cannot delete")
-    	utils.RespondWithError(w, http.StatusForbidden, "admin access required")
-    	return
+		utils.RespondWithError(w, http.StatusForbidden, "admin access required")
+		return
 	}
 
 	bugParam := r.PathValue("bugid")
@@ -317,7 +310,7 @@ func (cfg *APIConfig) DeleteBugByIDHandler (w http.ResponseWriter, r *http.Reque
 	logger = logger.With("bugId", bugID)
 	logger.Info("started querying to get existing bug with bugID")
 	bug, err := cfg.DB.GetBugsByID(r.Context(), bugID)
-	if err != nil { 
+	if err != nil {
 		logger.Error("database operation failed", "error", err)
 		utils.RespondWithError(w, http.StatusInternalServerError, "no bug  found with the id")
 		return
@@ -340,5 +333,3 @@ func (cfg *APIConfig) DeleteBugByIDHandler (w http.ResponseWriter, r *http.Reque
 	logger.Info("completed handler ")
 	w.WriteHeader(http.StatusNoContent)
 }
-
-
