@@ -302,7 +302,7 @@ func (cfg *APIConfig) GetUsersHandler (w http.ResponseWriter, r *http.Request) {
 	logger.Info("entered handler")
 	user, err := cfg.DB.GetAllUsers(r.Context())
 	if err != nil {
-		logger.Error("databse operation(fetching users) failed: %v", err)
+		logger.Error("databse operation(fetching users) failed:", "error", err)
 		utils.RespondWithError(w, http.StatusInternalServerError, "cannot fetch users")
 	}
 	logger = logger.With("user list", user)
