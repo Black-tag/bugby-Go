@@ -1,8 +1,10 @@
 #!/bin/sh
 set -e
 
+echo "📋 Environment variables:"
+env | busybox grep -E 'DATABASE_URL|PG'
 
-# Use explicit Railway variables if DATABASE_URL not set
+
 DB_URL=${DATABASE_URL:-"postgresql://${PGUSER}:${PGPASSWORD}@${PGHOST}:${PGPORT}/${PGDATABASE}?sslmode=require"}
 
 DB_URL=${DATABASE_URL:-"postgresql://postgres:postgres@db:5432/bugby?sslmode=disable"}
