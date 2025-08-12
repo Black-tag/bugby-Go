@@ -1,7 +1,6 @@
 #!/bin/sh
 set -e
-echo "📋 Environment variables:"
-printenv | grep -E 'DATABASE_URL|PG'
+
 
 # Use explicit Railway variables if DATABASE_URL not set
 DB_URL=${DATABASE_URL:-"postgresql://${PGUSER}:${PGPASSWORD}@${PGHOST}:${PGPORT}/${PGDATABASE}?sslmode=require"}
