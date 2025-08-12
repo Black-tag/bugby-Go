@@ -1,17 +1,14 @@
 package middleware
 
 import (
+	"golang.org/x/time/rate"
 	"net/http"
 	"sync"
 	"time"
-	"golang.org/x/time/rate"
 )
 
-
-
-
 type RateLimiter struct {
-	visitors map[string]*Visitor 
+	visitors map[string]*Visitor
 	mu       sync.Mutex
 	rate     int
 	burst    int
@@ -19,7 +16,7 @@ type RateLimiter struct {
 }
 
 type Visitor struct {
-	limiter *rate.Limiter 
+	limiter  *rate.Limiter
 	lastSeen time.Time
 }
 
@@ -32,7 +29,6 @@ func NewRateLimiter(rate int, burst int, window time.Duration) *RateLimiter {
 	}
 }
 
-
 func (rl *RateLimiter) Limit(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ip := r.RemoteAddr
@@ -40,7 +36,7 @@ func (rl *RateLimiter) Limit(next http.Handler) http.Handler {
 
 		v, exists := rl.visitors[ip]
 		if !exists {
-			limiter := rate.NewLimiter(rate.Every(rl.window/time.Duration(rl.rate)),rl.burst)
+			limiter := rate.NewLimiter(rate.Every(rl.window/time.Duration(rl.rate)), rl.burst)
 			rl.visitors[ip] = &Visitor{limiter, time.Now()}
 			v = rl.visitors[ip]
 		}
@@ -54,9 +50,3 @@ func (rl *RateLimiter) Limit(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
-
-
-
-
-
-
