@@ -14,11 +14,11 @@ import (
 )
 
 func MakeJWT(userID uuid.UUID, tokenSecret string, expiresIn time.Duration) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256,jwt.RegisteredClaims{
-		Issuer: "bugby",
-		IssuedAt: jwt.NewNumericDate(time.Now().UTC()),
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.RegisteredClaims{
+		Issuer:    "bugby",
+		IssuedAt:  jwt.NewNumericDate(time.Now().UTC()),
 		ExpiresAt: jwt.NewNumericDate(time.Now().Add(expiresIn)),
-		Subject: userID.String(),
+		Subject:   userID.String(),
 	})
 	signingKey := []byte(tokenSecret)
 	signedToken, err := token.SignedString(signingKey)
@@ -26,14 +26,12 @@ func MakeJWT(userID uuid.UUID, tokenSecret string, expiresIn time.Duration) (str
 		return "", fmt.Errorf("error signing token: %w", err)
 	}
 	return signedToken, nil
-		
 
-	
 }
 
 func ValidateJWT(tokenString, tokenSecret string) (uuid.UUID, error) {
 	claims := &jwt.RegisteredClaims{}
-	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token)(interface{}, error){
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 		return []byte(tokenSecret), nil
 
 	})
@@ -69,8 +67,8 @@ func GetBearerToken(headers http.Header) (string, error) {
 	return parts[1], nil
 }
 
-func MakeRefreshToken () (string, error) {
-	data:= make([]byte, 32)
+func MakeRefreshToken() (string, error) {
+	data := make([]byte, 32)
 	_, err := rand.Read(data)
 	if err != nil {
 		fmt.Println("error generating random data:", err)
@@ -80,8 +78,7 @@ func MakeRefreshToken () (string, error) {
 	return encodedData, nil
 }
 
-
-func GetAPIKey(headers http.Header)(string, error){
+func GetAPIKey(headers http.Header) (string, error) {
 	authHeader := headers.Get("Authorization")
 	if authHeader == "" {
 		return "", errors.New("no header")
@@ -94,6 +91,5 @@ func GetAPIKey(headers http.Header)(string, error){
 		return "", errors.New("authorization header must start with ApiKey")
 	}
 	return parts[1], nil
-
 
 }
