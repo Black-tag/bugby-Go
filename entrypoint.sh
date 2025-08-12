@@ -1,20 +1,23 @@
 #!/bin/sh
 set -e
 
-# Debug: Print all DB-related variables (Alpine compatible)
-echo "🔍 Environment Variables:"
-env | awk -F= '/DATABASE|PG/ {print}'
+DB_URL="${RAILWAY_DATABASE_URL:-${DATABASE_URL:-}}"
 
-# Priority: DATABASE_URL > Railway PG* vars > Local fallback
-if [ -n "$DATABASE_URL" ]; then
-    DB_URL="$DATABASE_URL"
-elif [ -n "$PGHOST" ]; then
+# # Priority: DATABASE_URL > Railway PG* vars > Local fallback
+# if [ -n "$DATABASE_URL" ]; then
+#     DB_URL="$DATABASE_URL"
+# elif [ -n "$PGHOST" ]; then
+#     DB_URL="postgresql://${PGUSER}:${PGPASSWORD}@${PGHOST}:${PGPORT}/${PGDATABASE}?sslmode=require"
+# else
+#     DB_URL="postgresql://postgres:postgres@localhost:5432/bugby?sslmode=disable"
+#     echo "⚠️  Using LOCAL database - for DEVELOPMENT only"
+# fi
+if [ -z "$DB_URL" ] && [ -n "$PGHOST" ]; then
     DB_URL="postgresql://${PGUSER}:${PGPASSWORD}@${PGHOST}:${PGPORT}/${PGDATABASE}?sslmode=require"
-else
+elif [ -z "$DB_URL" ]; then
     DB_URL="postgresql://postgres:postgres@localhost:5432/bugby?sslmode=disable"
-    echo "⚠️  Using LOCAL database - for DEVELOPMENT only"
+    echo "⚠️  Using LOCAL database - DEVELOPMENT mode"
 fi
-
 
 # DB_URL=${DATABASE_URL:-"postgresql://${PGUSER}:${PGPASSWORD}@${PGHOST}:${PGPORT}/${PGDATABASE}?sslmode=require"}
 
