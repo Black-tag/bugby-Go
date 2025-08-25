@@ -34,17 +34,17 @@ that small startups or teams can plug in for tracking and managing issues.
 
 # Installation(Local)
 # Clone the repo
-git clone https://github.com/<your-username>/bugby-go.git
-cd bugby-go
+```git clone https://github.com/<your-username>/bugby-go.git```
+```cd bugby-go```
 
 # Start services (Postgres + app)
-docker-compose up --build
+```docker-compose up --build```
 
 # Run migrations
-./scripts/dev_migrate.sh
+```./scripts/dev_migrate.sh```
 
 # Run tests
-go test ./... -cover
+```go test ./... -cover```
 
 
 #Environment variables
@@ -52,8 +52,8 @@ DB_URL=postgres://user:password@localhost:5432/bugby?sslmode=disable
 JWT_SECRET=supersecret 
 
 # API Endpoints 
-DB_URL=postgres://user:password@localhost:5432/bugby?sslmode=disable  
-JWT_SECRET=supersecret 
+```DB_URL=postgres://user:password@localhost:5432/bugby?sslmode=disable```  
+```JWT_SECRET=supersecret``` 
 
 # deployment
 
@@ -64,4 +64,5 @@ Planned features:
 - gRPC microservices  
 - Prometheus metrics + Grafana dashboards  
 - Frontend dashboard
+
 
