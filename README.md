@@ -47,7 +47,7 @@ that small startups or teams can plug in for tracking and managing issues.
 ```go test ./... -cover```
 
 
-#Environment variables
+# Environment variables
 DB_URL=postgres://user:password@localhost:5432/bugby?sslmode=disable  
 JWT_SECRET=supersecret 
 
@@ -64,6 +64,7 @@ Planned features:
 - gRPC microservices  
 - Prometheus metrics + Grafana dashboards  
 - Frontend dashboard
+
 
 
 
