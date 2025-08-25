@@ -33,17 +33,17 @@ that small startups or teams can plug in for tracking and managing issues.
 - Prometheus collects metrics for Grafana dashboards
 
 # Installation(Local)
-# Clone the repo
+1. Clone the repo
 ```git clone https://github.com/<your-username>/bugby-go.git```
 ```cd bugby-go```
 
-# Start services (Postgres + app)
+2. Start services (Postgres + app)
 ```docker-compose up --build```
 
-# Run migrations
+3. Run migrations
 ```./scripts/dev_migrate.sh```
 
-# Run tests
+4. Run tests
 ```go test ./... -cover```
 
 
@@ -64,5 +64,6 @@ Planned features:
 - gRPC microservices  
 - Prometheus metrics + Grafana dashboards  
 - Frontend dashboard
+
 
 
