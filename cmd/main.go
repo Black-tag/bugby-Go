@@ -5,7 +5,7 @@
 
 // @contact.name Anand Unni
 // @contact.url https://github.com/Black-tag
-// @contact.email your-email@example.com
+// @contact.email unnianandunni007@gmail.com
 
 // @license.name MIT
 // @license.url https://opensource.org/licenses/MIT
@@ -32,6 +32,7 @@ import (
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	httpswagger "github.com/swaggo/http-swagger"
+	_ "github.com/blacktag/bugby-Go/internal/docs"
 	// "github.com/ydb-platform/ydb-go-sdk/v3/ratelimiter"
 )
 

@@ -24,3 +24,12 @@ WHERE id = $3;
 
 -- name: GetRoleByID :one
 SELECT role FROM users WHERE id = $1;
+
+
+-- name: GetAllUsers :many
+SELECT * FROM users
+ORDER BY created_at DESC;
+
+-- name: DeleteuserByID :exec
+DELETE FROM users
+WHERE id = $1;

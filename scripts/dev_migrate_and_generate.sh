@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Path settings
-DB_URL="postgres://postgres:postgres@localhost:5432/bugby"
+DB_URL="postgres://postgres:postgres@localhost:5432/bugby
 MIGRATIONS_DIR="internal/db/migrations"
 SCHEMA_FILE="internal/db/schema.sql"
 SQLC_DIR="internal/db/sqlc"
