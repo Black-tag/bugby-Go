@@ -57,6 +57,10 @@ func main() {
 	dbQueries := database.New(db)
 	secret := os.Getenv("SECRET")
 
+	port := os.Getenv("PORT")
+	if port == "" {
+    	port = "8080"
+	}
 
 	cfg := api.APIConfig{
 		DB:     dbQueries,
@@ -98,7 +102,7 @@ func main() {
 	muxWithLimiter := ratelimiter.Limit(mux)
 
 	server := &http.Server{
-		Addr:    ":8080",
+		Addr:    ":" + port,
 		Handler: muxWithLimiter,
 	}
 
