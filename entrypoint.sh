@@ -19,8 +19,8 @@ done
 echo "✅ Running migrations with Goose..."
 goose -dir ./internal/db/migrations postgres "$DB_URL" up
 
-echo "✅ Running migrations with Goose..."
-goose -dir ./internal/db/migrations postgres "$DB_URL" up
+# echo "✅ Running migrations with Goose..."
+# goose -dir ./internal/db/migrations postgres "$DB_URL" up
 
 echo "🚀 Starting Go app..."
 ./bugby
