@@ -26,7 +26,7 @@ jobs:
           --health-retries 5
 
     env:
-      DB_SOURCE: postgres://postgres:postgres@localhost:5432/bugby?sslmode=disable
+      DB_URL: postgres://postgres:postgres@localhost:5432/bugby?sslmode=disable
 
     steps:
       - name: Checkout code
