@@ -43,12 +43,15 @@ func main() {
 	
 	
 
-	env := os.Getenv("APP_ENV") 
-	if env == "production" {
-    	godotenv.Load(".env.production")
-	} else {
-    godotenv.Load(".env.development")
-	}
+	// env := os.Getenv("APP_ENV") 
+	// if env == "production" {
+    // 	godotenv.Load(".env.production")
+	// } else {
+    // godotenv.Load(".env.development")
+	// }
+	if os.Getenv("APP_ENV") != "production" {
+        godotenv.Load(".env.development")
+    }
 	dbURL := os.Getenv("DB_URL")
 	db, err := sql.Open("postgres", dbURL)
 	if err != nil {
