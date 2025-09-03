@@ -6,6 +6,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
+ENV GOPROXY=https://proxy.golang.org,direct
 RUN go install github.com/pressly/goose/v3/cmd/goose@latest
 
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o bugby ./cmd

@@ -2,17 +2,32 @@
 
 services:
 
-  db:
-    image: postgres:16
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: bugby
-    ports:
-      - "5432:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    restart: unless-stopped
+  # db:
+  #   image: postgres:16
+  #   environment:
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: postgres
+  #     POSTGRES_DB: bugby
+  #   ports:
+  #     - "5432:5432"
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U postgres -d bugby"]
+  #     interval: 5s
+  #     timeout: 5s
+  #     retries: 5
+      
+  #   volumes:
+  #     - pgdata:/var/lib/postgresql/data
+  #   restart: unless-stopped
+
+  # app:
+  #   build: .
+  #   container_name: bugby-go
+  #   depends_on:
+  #     db: 
+  #       condition: service_healthy
+  #   ports:
+  #     - "8081:8080"
 
   api:
     build:
@@ -21,12 +36,12 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
       - DB_URL=postgresql://postgres:postgres@db:5432/bugby?sslmode=disable
       - PORT=8080
-    # volumes:
-    #   - .:/app
+   
     entrypoint: ["/app/entrypoint.sh"]
     restart: unless-stopped
 

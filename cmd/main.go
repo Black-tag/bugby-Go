@@ -40,6 +40,15 @@ func main() {
 
 	godotenv.Load()
 
+	
+	
+
+	env := os.Getenv("APP_ENV") 
+	if env == "production" {
+    	godotenv.Load(".env.production")
+	} else {
+    godotenv.Load(".env.development")
+	}
 	dbURL := os.Getenv("DB_URL")
 	db, err := sql.Open("postgres", dbURL)
 	if err != nil {
@@ -47,6 +56,7 @@ func main() {
 	}
 	dbQueries := database.New(db)
 	secret := os.Getenv("SECRET")
+
 
 	cfg := api.APIConfig{
 		DB:     dbQueries,
