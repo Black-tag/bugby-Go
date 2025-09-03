@@ -35,16 +35,17 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
-    depends_on:
-      db:
-        condition: service_healthy
     environment:
       - DB_URL=postgresql://postgres:postgres@db:5432/bugby?sslmode=disable
       - PORT=8080
+    depends_on:
+      db:
+        condition: service_healthy
+    
    
     entrypoint: ["/app/entrypoint.sh"]
     restart: unless-stopped
 
-volumes:
-  pgdata:
+# volumes:
+#   pgdata:
 
