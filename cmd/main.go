@@ -95,6 +95,7 @@ func main() {
 	mux.Handle("PUT /api/users", authMiddleware(http.HandlerFunc(cfg.UpdateCredentialsHandler)))
 	mux.HandleFunc("/swagger/", httpswagger.WrapHandler)
 	mux.HandleFunc("GET /api/users", cfg.GetUsersHandler)
+	mux.Handle("GET /api/users/me/bugs", authMiddleware(http.HandlerFunc(cfg.GetUserSpecificBugs)))
 
 	mux.HandleFunc("GET /test", func(w http.ResponseWriter, r *http.Request) {
 		slog.Info("TEST LOG MESSAGE", "key", "value")

@@ -110,6 +110,41 @@ func (q *Queries) GetBugsByID(ctx context.Context, id uuid.UUID) (Bug, error) {
 	return i, err
 }
 
+const getUserSpecificBugs = `-- name: GetUserSpecificBugs :many
+SELECT id, title, description, posted_by, created_at, updated_at FROM bugs
+WHERE posted_by = $1
+`
+
+func (q *Queries) GetUserSpecificBugs(ctx context.Context, postedBy uuid.UUID) ([]Bug, error) {
+	rows, err := q.db.QueryContext(ctx, getUserSpecificBugs, postedBy)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Bug
+	for rows.Next() {
+		var i Bug
+		if err := rows.Scan(
+			&i.ID,
+			&i.Title,
+			&i.Description,
+			&i.PostedBy,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateBugByID = `-- name: UpdateBugByID :exec
 UPDATE bugs
 SET 

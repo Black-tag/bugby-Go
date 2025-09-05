@@ -310,3 +310,5 @@ func (cfg *APIConfig) GetUsersHandler (w http.ResponseWriter, r *http.Request) {
 	logger.Info("completed handler(getall users)")
 
 }
+
+

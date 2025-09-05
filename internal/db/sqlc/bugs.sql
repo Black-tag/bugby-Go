@@ -33,3 +33,8 @@ WHERE id = $1;
 DELETE FROM bugs
 WHERE id = $1;
 
+
+-- name: GetUserSpecificBugs :many
+SELECT * FROM bugs
+WHERE posted_by = $1;
+
