@@ -172,7 +172,7 @@ MIT — see [LICENSE](LICENSE)
 
 ## 🟢 Live Demo
 
-Deployed on Railway (link in repo description or ask maintainer).
+Deployed on Railway (https://bugby-go-production.up.railway.app/).
 
 ---
 
