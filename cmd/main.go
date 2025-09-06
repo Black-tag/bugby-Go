@@ -25,16 +25,20 @@ import (
 
 	"github.com/blacktag/bugby-Go/internal/api"
 	"github.com/blacktag/bugby-Go/internal/database"
+	_ "github.com/blacktag/bugby-Go/internal/docs"
 	"github.com/blacktag/bugby-Go/internal/middleware"
 	"github.com/casbin/casbin/v2"
 	"github.com/casbin/casbin/v2/model"
 	fileadapter "github.com/casbin/casbin/v2/persist/file-adapter"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
+	"github.com/prometheus/client_golang/prometheus"
 	httpswagger "github.com/swaggo/http-swagger"
-	_ "github.com/blacktag/bugby-Go/internal/docs"
+	"github.com/blacktag/bugby-Go/internal/metrics"
 	// "github.com/ydb-platform/ydb-go-sdk/v3/ratelimiter"
 )
+ 
+
 
 func main() {
 
@@ -77,10 +81,17 @@ func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	slog.SetDefault(logger)
 
+	reg := prometheus.DefaultRegisterer
+	m := metrics.NewMetrics(reg)
+
+	
+	loggingMiddleware := middleware.MetricsMiddleware(m)
+	
 	authMiddleware := middleware.Authenticate(cfg.SECRET, cfg.DB)
 	authMiddleware2 := middleware.RevokeTokenAthenticate(cfg.DB)
 
 	mux := http.NewServeMux()
+	muxWithMetrics := loggingMiddleware(mux)
 
 	protected := authMiddleware(middleware.Authorization(enforcer)(http.HandlerFunc(cfg.DeleteBugByIDHandler)))
 	mux.Handle("POST /api/bugs", authMiddleware(http.HandlerFunc(cfg.CreateBugHandler)))
@@ -96,6 +107,9 @@ func main() {
 	mux.HandleFunc("/swagger/", httpswagger.WrapHandler)
 	mux.HandleFunc("GET /api/users", cfg.GetUsersHandler)
 	mux.Handle("GET /api/users/me/bugs", authMiddleware(http.HandlerFunc(cfg.GetUserSpecificBugs)))
+	mux.Handle("/metrics/", metrics.MetricsHandler())
+	
+
 
 	mux.HandleFunc("GET /test", func(w http.ResponseWriter, r *http.Request) {
 		slog.Info("TEST LOG MESSAGE", "key", "value")
@@ -103,7 +117,7 @@ func main() {
 	})
 
 	ratelimiter := middleware.NewRateLimiter(5, 10, time.Minute)
-	muxWithLimiter := ratelimiter.Limit(mux)
+	muxWithLimiter := ratelimiter.Limit(muxWithMetrics)
 
 	server := &http.Server{
 		Addr:    ":" + port,

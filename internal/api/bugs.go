@@ -3,7 +3,6 @@ package api
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"log/slog"
 	"net/http"
 	"time"
@@ -334,8 +333,6 @@ func (cfg *APIConfig) DeleteBugByIDHandler(w http.ResponseWriter, r *http.Reques
 	logger.Info("completed handler ")
 	w.WriteHeader(http.StatusNoContent)
 }
-
-
 func (cfg *APIConfig) GetUserSpecificBugs (w http.ResponseWriter, r *http.Request) {
 	logger := slog.Default().With(
 		"handler", "To get user specific bugs",
@@ -354,7 +351,7 @@ func (cfg *APIConfig) GetUserSpecificBugs (w http.ResponseWriter, r *http.Reques
 	}
 	bugsOfUser, err := cfg.DB.GetUserSpecificBugs(r.Context(), userID)
 	if err != nil {
-		logger.Error("no bugs for this user", userID.String())
+		logger.Error("no bugs for this user", userIDVal)
 		utils.RespondWithError(w, http.StatusInternalServerError, "cannot fetch bugs from database")
 		return
 	}
