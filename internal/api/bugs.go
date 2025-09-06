@@ -359,7 +359,3 @@ func (cfg *APIConfig) GetUserSpecificBugs (w http.ResponseWriter, r *http.Reques
 	logger = logger.With("bugs of user", bugsOfUser)
 	utils.RespondWithJSON(w, http.StatusOK, bugsOfUser)
 }
-<<<<<<< HEAD
-=======
-
->>>>>>> 8dd8df3 (cahnges in bugs.go dou to pull request mergin issue)
