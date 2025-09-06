@@ -30,7 +30,7 @@ type Metrics struct {
 
 func NewMetrics(reg prometheus.Registerer) *Metrics {
 	logger := slog.Default().With(
-		"metrics handler",
+		"metrics handler", "NewMetricaHandler",
 	)
 	logger.Info("entered NewMetrics")
     m := &Metrics{
