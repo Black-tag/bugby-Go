@@ -106,12 +106,10 @@ func main() {
 	mux.Handle("PUT /api/users", authMiddleware(http.HandlerFunc(cfg.UpdateCredentialsHandler)))
 	mux.HandleFunc("/swagger/", httpswagger.WrapHandler)
 	mux.HandleFunc("GET /api/users", cfg.GetUsersHandler)
-<<<<<<< Updated upstream
-=======
 	mux.Handle("GET /api/users/me/bugs", authMiddleware(http.HandlerFunc(cfg.GetUserSpecificBugs)))
 	mux.Handle("/metrics/", metrics.MetricsHandler())
 	
->>>>>>> Stashed changes
+
 
 	mux.HandleFunc("GET /test", func(w http.ResponseWriter, r *http.Request) {
 		slog.Info("TEST LOG MESSAGE", "key", "value")
