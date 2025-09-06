@@ -9,7 +9,6 @@ func HashPassword(password string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	// fmt.Println("hashedpassword", string(hashedPassword))
 	return string(hashedPassword), nil
 }
 
