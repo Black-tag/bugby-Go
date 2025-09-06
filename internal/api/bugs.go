@@ -351,7 +351,7 @@ func (cfg *APIConfig) GetUserSpecificBugs (w http.ResponseWriter, r *http.Reques
 	}
 	bugsOfUser, err := cfg.DB.GetUserSpecificBugs(r.Context(), userID)
 	if err != nil {
-		logger.Error("no bugs for this user", userID.String())
+		logger.Error("no bugs for this user", userIDVal)
 		utils.RespondWithError(w, http.StatusInternalServerError, "cannot fetch bugs from database")
 		return
 	}
