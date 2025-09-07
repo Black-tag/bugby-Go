@@ -22,7 +22,7 @@ import (
 	"net/http"
 	"os"
 	"time"
-
+	
 	"github.com/blacktag/bugby-Go/internal/api"
 	"github.com/blacktag/bugby-Go/internal/database"
 	_ "github.com/blacktag/bugby-Go/internal/docs"
@@ -35,6 +35,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	httpswagger "github.com/swaggo/http-swagger"
 	"github.com/blacktag/bugby-Go/internal/metrics"
+	"github.com/blacktag/bugby-Go/internal/caching"
 	// "github.com/ydb-platform/ydb-go-sdk/v3/ratelimiter"
 )
  
@@ -68,6 +69,11 @@ func main() {
 	if port == "" {
     	port = "8080"
 	}
+	err = caching.InitCache()
+	if err != nil {
+    	log.Fatal("failed to init cache: ", err)
+	}
+
 
 	cfg := api.APIConfig{
 		DB:     dbQueries,
@@ -86,6 +92,9 @@ func main() {
 
 	
 	loggingMiddleware := middleware.MetricsMiddleware(m)
+	// inside main.go, after ratelimiter:
+	cachingMiddleware := middleware.CachingMiddleware(5 * time.Minute)
+
 	
 	authMiddleware := middleware.Authenticate(cfg.SECRET, cfg.DB)
 	authMiddleware2 := middleware.RevokeTokenAthenticate(cfg.DB)
@@ -97,16 +106,16 @@ func main() {
 	mux.Handle("POST /api/bugs", authMiddleware(http.HandlerFunc(cfg.CreateBugHandler)))
 	mux.Handle("DELETE /api/bugs/{bugid}", protected)
 	mux.Handle("POST /api/bugs/{bugid}", authMiddleware(http.HandlerFunc(cfg.UpdateBugHandler)))
-	mux.HandleFunc("GET /api/bugs/{bugid}", cfg.GetBugByIDHandler)
-	mux.HandleFunc("GET /api/bugs", cfg.GetBugsHandler)
+	mux.Handle("GET /api/bugs/{bugid}", cachingMiddleware(http.HandlerFunc(cfg.GetBugByIDHandler)))
+	mux.Handle("GET /api/bugs", cachingMiddleware(http.HandlerFunc(cfg.GetBugsHandler)))
 	mux.HandleFunc("POST /api/users", cfg.CreateUserHandler)
 	mux.HandleFunc("POST /api/login", cfg.LoginUserHandler)
 	mux.HandleFunc("POST /api/refresh", cfg.RefreshTokenHandler)
 	mux.Handle("POST /api/revoke", authMiddleware2(http.HandlerFunc(cfg.RevokeTokenHandler)))
 	mux.Handle("PUT /api/users", authMiddleware(http.HandlerFunc(cfg.UpdateCredentialsHandler)))
 	mux.HandleFunc("/swagger/", httpswagger.WrapHandler)
-	mux.HandleFunc("GET /api/users", cfg.GetUsersHandler)
-	mux.Handle("GET /api/users/me/bugs", authMiddleware(http.HandlerFunc(cfg.GetUserSpecificBugs)))
+	mux.Handle("GET /api/users", cachingMiddleware(http.HandlerFunc(cfg.GetUsersHandler)))
+	mux.Handle("GET /api/users/me/bugs", authMiddleware(cachingMiddleware(http.HandlerFunc(cfg.GetUserSpecificBugs))))
 	mux.Handle("/metrics/", metrics.MetricsHandler())
 	
 
