@@ -36,7 +36,7 @@ type UpdateBugRequest struct {
 
 // @Summary Create bugs
 // @Description Existing users can create bugs
-// @Tags users
+// @Tags bugs
 // @Accept json
 // @Produce json
 // @Param request body CreateBugRequest true "bug creation data"
@@ -333,7 +333,7 @@ func (cfg *APIConfig) DeleteBugByIDHandler(w http.ResponseWriter, r *http.Reques
 	logger.Info("completed handler ")
 	w.WriteHeader(http.StatusNoContent)
 }
-func (cfg *APIConfig) GetUserSpecificBugs (w http.ResponseWriter, r *http.Request) {
+func (cfg *APIConfig) GetUserSpecificBugs(w http.ResponseWriter, r *http.Request) {
 	logger := slog.Default().With(
 		"handler", "To get user specific bugs",
 	)
@@ -344,7 +344,7 @@ func (cfg *APIConfig) GetUserSpecificBugs (w http.ResponseWriter, r *http.Reques
 		utils.RespondWithError(w, http.StatusUnauthorized, "invalid or missing user ID")
 		return
 	}
-	
+
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "invalid or missing user ID")
 		return
@@ -356,5 +356,6 @@ func (cfg *APIConfig) GetUserSpecificBugs (w http.ResponseWriter, r *http.Reques
 		return
 	}
 	logger = logger.With("bugs of user", bugsOfUser)
+	logger.Info("bugs of user")
 	utils.RespondWithJSON(w, http.StatusOK, bugsOfUser)
 }

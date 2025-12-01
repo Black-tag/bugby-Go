@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/blacktag/bugby-Go/internal/caching"
-	
 )
 
 func CachingMiddleware(expiration time.Duration) func(http.Handler) http.Handler {

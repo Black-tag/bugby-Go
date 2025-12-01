@@ -2,8 +2,10 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 16.9 (Ubuntu 16.9-0ubuntu0.24.04.1)
--- Dumped by pg_dump version 16.9 (Ubuntu 16.9-0ubuntu0.24.04.1)
+\restrict zGXI4CyRB5kA3mXfUIvS8bckWZaZO6BzEaek9Aa6ASHjfJ7tkFsxdIKfoKzMQWj
+
+-- Dumped from database version 16.10 (Ubuntu 16.10-0ubuntu0.24.04.1)
+-- Dumped by pg_dump version 16.10 (Ubuntu 16.10-0ubuntu0.24.04.1)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -30,7 +32,9 @@ CREATE TABLE public.bugs (
     description text NOT NULL,
     posted_by uuid NOT NULL,
     created_at timestamp without time zone NOT NULL,
-    updated_at timestamp without time zone NOT NULL
+    updated_at timestamp without time zone NOT NULL,
+    assigned_t0 uuid,
+    assigned_by uuid
 );
 
 
@@ -147,4 +151,6 @@ ALTER TABLE ONLY public.refresh_tokens
 --
 -- PostgreSQL database dump complete
 --
+
+\unrestrict zGXI4CyRB5kA3mXfUIvS8bckWZaZO6BzEaek9Aa6ASHjfJ7tkFsxdIKfoKzMQWj
 
