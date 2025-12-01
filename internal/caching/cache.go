@@ -9,25 +9,19 @@ import (
 	"os"
 	"time"
 
-	
 	"github.com/redis/go-redis/v9"
 )
 
-
 var (
-	Ctx = context.Background()
+	Ctx    = context.Background()
 	Client *redis.Client
 )
 
-
-
 type CachedResponse struct {
-	StatusCode  int
-	Headers     map[string]string
-	Body        []byte
-
+	StatusCode int
+	Headers    map[string]string
+	Body       []byte
 }
-
 
 func InitCache() error {
 	redisURL := os.Getenv("REDIS_URL")
@@ -43,21 +37,13 @@ func InitCache() error {
 	_, err = Client.Ping(Ctx).Result()
 	return err
 
-
-
-
-}	
-
+}
 
 // points for caching
 // make a request
 // check if the cache exists
 // if its in cache return cached response
 // if its not in cache do req catch req set it in cache
-
-
-
-
 
 func GetCached(cacheKey string) (*CachedResponse, error) {
 	logger := slog.Default().With(
@@ -67,11 +53,11 @@ func GetCached(cacheKey string) (*CachedResponse, error) {
 
 	val, err := Client.Get(Ctx, cacheKey).Result()
 	if err == redis.Nil {
-		
+
 		return nil, err
 	}
 	if err != nil {
-		
+
 		return nil, err
 	}
 	var cached CachedResponse
@@ -81,17 +67,11 @@ func GetCached(cacheKey string) (*CachedResponse, error) {
 		return nil, err
 	}
 
-
-
 	return &cached, nil
-
-
 
 }
 
-
-
-func (cache *CachedResponse)SetCached(cacheKey string, expiration time.Duration) error {
+func (cache *CachedResponse) SetCached(cacheKey string, expiration time.Duration) error {
 	logger := slog.Default().With(
 		"caching function", "setting response into cache with cacheKey",
 	)
@@ -100,21 +80,18 @@ func (cache *CachedResponse)SetCached(cacheKey string, expiration time.Duration)
 	if err != nil {
 		logger.Error("couldnt marshal Cached response into json")
 		logger.Error("couldnt marshal json", "err", err)
-		return  err
-		
+		return err
+
 	}
-	cachedresult:= Client.Set(Ctx, cacheKey, jsonData, expiration).Err()
-	if err != nil {
+	cachedresult := Client.Set(Ctx, cacheKey, jsonData, expiration).Err()
+	if cachedresult != nil {
 		logger.Error("couldnt fetch cached result")
 		logger.Error("couldnt set cache in redis", "err", err)
 		return nil
 	}
 	return cachedresult
 
-
 }
-
-
 
 func ResponseWrapper(statuscode int, headers http.Header, body []byte) *CachedResponse {
 
@@ -127,8 +104,8 @@ func ResponseWrapper(statuscode int, headers http.Header, body []byte) *CachedRe
 	}
 	return &CachedResponse{
 		StatusCode: statuscode,
-		Headers: headerMap,
-		Body: body,
+		Headers:    headerMap,
+		Body:       body,
 	}
 
 }
@@ -139,9 +116,8 @@ type Recorder struct {
 	Body       []byte
 }
 
-
 func NewRecorder(w http.ResponseWriter) *Recorder {
-	return &Recorder{ ResponseWriter: w, StatusCode: http.StatusOK}
+	return &Recorder{ResponseWriter: w, StatusCode: http.StatusOK}
 }
 
 func (r *Recorder) WriteHeader(code int) {
@@ -152,5 +128,5 @@ func (r *Recorder) WriteHeader(code int) {
 func (r *Recorder) Write(b []byte) (int, error) {
 	r.Body = append(r.Body, b...)
 	return r.ResponseWriter.Write(b)
-	
+
 }

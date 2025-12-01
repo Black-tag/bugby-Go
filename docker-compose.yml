@@ -2,50 +2,87 @@
 
 services:
 
-  # db:
-  #   image: postgres:16
-  #   environment:
-  #     POSTGRES_USER: postgres
-  #     POSTGRES_PASSWORD: postgres
-  #     POSTGRES_DB: bugby
-  #   ports:
-  #     - "5432:5432"
-  #   healthcheck:
-  #     test: ["CMD-SHELL", "pg_isready -U postgres -d bugby"]
-  #     interval: 5s
-  #     timeout: 5s
-  #     retries: 5
-      
-  #   volumes:
-  #     - pgdata:/var/lib/postgresql/data
-  #   restart: unless-stopped
+  db:
+    image: postgres:16
+    container_name: bugby-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: bugby
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d bugby"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - bugby-net
 
-  # app:
-  #   build: .
-  #   container_name: bugby-go
-  #   depends_on:
-  #     db: 
-  #       condition: service_healthy
-  #   ports:
-  #     - "8081:8080"
+  redis:
+    image: redis:7
+    container_name: bugby-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - bugby-net
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: bugby-prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    ports:
+      - "9091:9090"
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+    restart: unless-stopped
+    networks:
+      - bugby-net
 
   api:
     build:
       context: .
       dockerfile: Dockerfile
+    container_name: bugby-api
     ports:
       - "8080:8080"
     environment:
-      - DB_URL=postgresql://postgres:postgres@db:5432/bugby?sslmode=disable
+      - DB_URL=postgres://postgres:postgres@db:5432/bugby?sslmode=disable
+      - SECRET=W2X3k961oS5JUYMoyHk+BWnXKQ4u21rSH8eSPpnw9mdkp0+Xq4iX5oprtMFjF9Zp3OnKhfbhCxAiM9vCKoPa/A==
       - PORT=8080
+      - REDIS_URL=redis://:161718@redis:6379/0
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - METRICS_ENDPOINT=/metrics
     depends_on:
-      db:
-        condition: service_healthy
-    
-   
+      - db
+      - redis
+      - prometheus
     entrypoint: ["/app/entrypoint.sh"]
     restart: unless-stopped
+    networks:
+      - bugby-net
 
-# volumes:
-#   pgdata:
 
+volumes:
+  pgdata:
+  redis-data:
+  prometheus-data:
+
+networks:
+  bugby-net:
+    driver: bridge

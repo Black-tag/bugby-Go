@@ -166,6 +166,7 @@ func TestCreateBugHandler(t *testing.T) {
 	}
 
 	logger = logger.With("requestBody", requestBody)
+	logger.Info("requestbody")
 	req := httptest.NewRequest("POST", "/api/bugs", bytes.NewBuffer(requestBody))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer test-token")

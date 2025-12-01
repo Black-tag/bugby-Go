@@ -22,10 +22,12 @@ import (
 	"net/http"
 	"os"
 	"time"
-	
+
 	"github.com/blacktag/bugby-Go/internal/api"
+	"github.com/blacktag/bugby-Go/internal/caching"
 	"github.com/blacktag/bugby-Go/internal/database"
 	_ "github.com/blacktag/bugby-Go/internal/docs"
+	"github.com/blacktag/bugby-Go/internal/metrics"
 	"github.com/blacktag/bugby-Go/internal/middleware"
 	"github.com/casbin/casbin/v2"
 	"github.com/casbin/casbin/v2/model"
@@ -34,29 +36,22 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/prometheus/client_golang/prometheus"
 	httpswagger "github.com/swaggo/http-swagger"
-	"github.com/blacktag/bugby-Go/internal/metrics"
-	"github.com/blacktag/bugby-Go/internal/caching"
 	// "github.com/ydb-platform/ydb-go-sdk/v3/ratelimiter"
 )
- 
-
 
 func main() {
 
 	godotenv.Load()
 
-	
-	
-
-	// env := os.Getenv("APP_ENV") 
+	// env := os.Getenv("APP_ENV")
 	// if env == "production" {
-    // 	godotenv.Load(".env.production")
+	// 	godotenv.Load(".env.production")
 	// } else {
-    // godotenv.Load(".env.development")
+	// godotenv.Load(".env.development")
 	// }
 	if os.Getenv("APP_ENV") != "production" {
-        godotenv.Load(".env.development")
-    }
+		godotenv.Load(".env.development")
+	}
 	dbURL := os.Getenv("DB_URL")
 	db, err := sql.Open("postgres", dbURL)
 	if err != nil {
@@ -67,13 +62,12 @@ func main() {
 
 	port := os.Getenv("PORT")
 	if port == "" {
-    	port = "8080"
+		port = "8080"
 	}
 	err = caching.InitCache()
 	if err != nil {
-    	log.Fatal("failed to init cache: ", err)
+		log.Fatal("failed to init cache: ", err)
 	}
-
 
 	cfg := api.APIConfig{
 		DB:     dbQueries,
@@ -90,12 +84,10 @@ func main() {
 	reg := prometheus.DefaultRegisterer
 	m := metrics.NewMetrics(reg)
 
-	
 	loggingMiddleware := middleware.MetricsMiddleware(m)
-	// inside main.go, after ratelimiter:
+
 	cachingMiddleware := middleware.CachingMiddleware(5 * time.Minute)
 
-	
 	authMiddleware := middleware.Authenticate(cfg.SECRET, cfg.DB)
 	authMiddleware2 := middleware.RevokeTokenAthenticate(cfg.DB)
 
@@ -117,8 +109,6 @@ func main() {
 	mux.Handle("GET /api/users", cachingMiddleware(http.HandlerFunc(cfg.GetUsersHandler)))
 	mux.Handle("GET /api/users/me/bugs", authMiddleware(cachingMiddleware(http.HandlerFunc(cfg.GetUserSpecificBugs))))
 	mux.Handle("/metrics/", metrics.MetricsHandler())
-	
-
 
 	mux.HandleFunc("GET /test", func(w http.ResponseWriter, r *http.Request) {
 		slog.Info("TEST LOG MESSAGE", "key", "value")
@@ -146,7 +136,7 @@ func SetupCasbin() (*casbin.Enforcer, error) {
 	m, err := model.NewModelFromFile("rbac_model.conf")
 	if err != nil {
 
-		return nil, fmt.Errorf("cannot load model for enforcer: %w", err)
+		return nil, fmt.Errorf("cannot load model for enforcer: %v", err)
 	}
 
 	a := fileadapter.NewAdapter("rbac_policy.csv")
@@ -154,12 +144,12 @@ func SetupCasbin() (*casbin.Enforcer, error) {
 	enforcer, err := casbin.NewEnforcer(m, a)
 	if err != nil {
 
-		return nil, fmt.Errorf("cannot create enforcer: %w", err)
+		return nil, fmt.Errorf("cannot create enforcer: %v", err)
 	}
 	err = enforcer.LoadPolicy()
 	if err != nil {
 
-		return nil, fmt.Errorf("cannot load policy: %w", err)
+		return nil, fmt.Errorf("cannot load policy: %v", err)
 	}
 	return enforcer, nil
 }

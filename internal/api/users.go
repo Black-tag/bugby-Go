@@ -63,8 +63,8 @@ type UpdateResponse struct {
 // @Security BearerAuth
 func (cfg *APIConfig) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	logger := slog.Default().With(
-		"handler", "CreateUSerHandler", 
-		"method", r.Method, 
+		"handler", "CreateUSerHandler",
+		"method", r.Method,
 		"path", r.URL.Path,
 	)
 	logger.Info("enetered Hnadler")
@@ -294,8 +294,7 @@ func (cfg *APIConfig) UpdateCredentialsHandler(w http.ResponseWriter, r *http.Re
 	})
 }
 
-
-func (cfg *APIConfig) GetUsersHandler (w http.ResponseWriter, r *http.Request) {
+func (cfg *APIConfig) GetUsersHandler(w http.ResponseWriter, r *http.Request) {
 	logger := slog.Default().With(
 		"handler", "GetUSerHandler",
 	)
@@ -310,5 +309,3 @@ func (cfg *APIConfig) GetUsersHandler (w http.ResponseWriter, r *http.Request) {
 	logger.Info("completed handler(getall users)")
 
 }
-
-

@@ -7,12 +7,9 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-
-
 func TestHashPassword(t *testing.T) {
-	logger:= slog.Default().With(
+	logger := slog.Default().With(
 		"test", "HashPasswordTests",
-
 	)
 	logger.Info("started tests")
 
@@ -39,19 +36,15 @@ func TestHashPassword(t *testing.T) {
 	}
 }
 
-
 func TestHashPassword2(t *testing.T) {
 	tests := []struct {
-		name string
+		name     string
 		password string
-		wantErr bool
+		wantErr  bool
 	}{
 		{"valid password", "mypassword", false},
 		{"empty password", "", false},
-		
 	}
-
-
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
