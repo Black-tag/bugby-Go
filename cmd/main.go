@@ -15,12 +15,15 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"log"
 	"log/slog"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/blacktag/bugby-Go/internal/api"
@@ -75,7 +78,7 @@ func main() {
 	}
 	enforcer, err := SetupCasbin()
 	if err != nil {
-		log.Fatal("failed to setup casbin: %w", err)
+		log.Fatal("failed to setup casbin: ", err)
 	}
 
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
@@ -123,12 +126,31 @@ func main() {
 		Handler: muxWithLimiter,
 	}
 
-	slog.Info("server started", "port", 8080)
+	done := make(chan os.Signal, 1)
+	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+
+	
+	go func() {
+		if err = server.ListenAndServe(); err != nil {
+			log.Fatalf("listen: %s\n", err)
+		}
+
+	}()
+	logger.Info("server started", "port", 8080)
 	fmt.Println("🌐 starting the server on: http://localhost:8080...")
-	err = server.ListenAndServe()
-	if err != nil {
-		fmt.Printf("Server failed: %v\n", err)
+
+	<-done
+	logger.Info("server stopped")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer func() {
+		cancel()
+	}()
+
+	if err := server.Shutdown(ctx); err != nil {
+		log.Fatalf("server shutdown failed: %v", err)
 	}
+	logger.Info("Server Exited Succesfully")
 
 }
 
