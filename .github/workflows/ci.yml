@@ -44,6 +44,9 @@ jobs:
         run: |
           git diff --exit-code go.mod go.sum
 
+      - name: Download modules
+        run: go mod download
+
       - name: Build
         run: go build -v ./...
 
@@ -51,8 +54,12 @@ jobs:
         uses: golangci/golangci-lint-action@v6
         with:
           version: v1.60
+          args: --no-config --timeout=5m
+        env:
         env:
           CGO_ENABLED: 0
+          GOFLAGS: "-mod=mod"
+          GOPROXY: "https://proxy.golang.org,direct"
 
       - name: Run tests
         run: go test -race -v ./...
