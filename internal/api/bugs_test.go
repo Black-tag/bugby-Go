@@ -19,6 +19,7 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/blacktag/bugby-Go/internal/database"
+	"github.com/blacktag/bugby-Go/internal/middleware"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
@@ -26,7 +27,11 @@ import (
 func TestGetBugHandler(t *testing.T) {
 
 	cfg, mock := setupTest(t)
-	defer cfg.SQLDB.Close()
+	defer func() {
+		if err := cfg.SQLDB.Close(); err != nil {
+			t.Logf("Error closing DB: %v", err)
+		}
+	}()
 
 	expectedBugs := []database.Bug{
 		{
@@ -81,7 +86,11 @@ func TestGetBugbyIDHandler(t *testing.T) {
 		"handler", "TesBugIDHandler",
 	)
 	cfg, mock := setupTest(t)
-	defer cfg.SQLDB.Close()
+	defer func() {
+		if err := cfg.SQLDB.Close(); err != nil {
+			t.Logf("Error closing DB: %v", err)
+		}
+	}()
 
 	testbug := database.Bug{
 		ID:          uuid.New(),
@@ -134,7 +143,11 @@ func TestGetBugbyIDHandler(t *testing.T) {
 
 func TestCreateBugHandler(t *testing.T) {
 	cfg, mock := setupTest(t)
-	defer cfg.SQLDB.Close()
+	defer func() {
+		if err := cfg.SQLDB.Close(); err != nil {
+			t.Logf("Error closing DB: %v", err)
+		}
+	}()
 	slog.Info("started CreateBugHandler Test")
 	logger := slog.Default().With(
 		"test", "TestcreateBugHandler",
@@ -170,7 +183,7 @@ func TestCreateBugHandler(t *testing.T) {
 	req := httptest.NewRequest("POST", "/api/bugs", bytes.NewBuffer(requestBody))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer test-token")
-	ctx := context.WithValue(req.Context(), "userID", userID)
+	ctx := context.WithValue(req.Context(), middleware.UserIDKey, userID)
 
 	req = req.WithContext(ctx)
 	w := httptest.NewRecorder()
@@ -199,7 +212,11 @@ func TestUpdateBugHandler(t *testing.T) {
 		"test", "TestupdateBugHandler",
 	)
 	cfg, mock := setupTest(t)
-	defer cfg.SQLDB.Close()
+	defer func() {
+		if err := cfg.SQLDB.Close(); err != nil {
+			t.Logf("Error closing DB: %v", err)
+		}
+	}()
 	logger.Info("started tests")
 	userID := uuid.New()
 	logger = logger.With("userID", userID)
@@ -294,7 +311,7 @@ func TestUpdateBugHandler(t *testing.T) {
 	req := httptest.NewRequest("POST", "/api/bugs/"+bugID.String(), bytes.NewBuffer(requestBody))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer test-token")
-	ctx := context.WithValue(req.Context(), "userID", userID)
+	ctx := context.WithValue(req.Context(), middleware.UserIDKey, userID)
 	req = req.WithContext(ctx)
 	w := httptest.NewRecorder()
 	t.Logf("Making request to: %s", req.URL.Path)
@@ -336,7 +353,11 @@ func TestDeleteBugByIDHandler(t *testing.T) {
 	bugID := uuid.New()
 	logger = logger.With("bugID", bugID)
 	cfg, mock := setupTest(t)
-	defer cfg.SQLDB.Close()
+	defer func() {
+		if err := cfg.SQLDB.Close(); err != nil {
+			t.Logf("Error closing DB: %v", err)
+		}
+	}()
 
 	mock.ExpectQuery(regexp.QuoteMeta(`SELECT id, title, description, posted_by, created_at, updated_at FROM bugs WHERE Id = $1`)).
 		WithArgs(bugID).
@@ -362,9 +383,9 @@ WHERE id = $1`
 	//     userKey   contextKey = "user"
 	// )
 
-	ctx := context.WithValue(req.Context(), "userID", userID)
-	ctx = context.WithValue(ctx, "userRole", "admin")
-	ctx = context.WithValue(ctx, "user", testUser)
+	ctx := context.WithValue(req.Context(), middleware.UserIDKey, userID)
+	ctx = context.WithValue(ctx, middleware.RoleKey, "admin")
+	ctx = context.WithValue(ctx, middleware.UserKey, testUser)
 	req = req.WithContext(ctx)
 	w := httptest.NewRecorder()
 	t.Logf("Making request to: %s", req.URL.Path)

@@ -44,7 +44,9 @@ import (
 
 func main() {
 
-	godotenv.Load()
+	if err := godotenv.Load(); err != nil {
+		slog.Warn("Error loading .env file", "err", err)
+	}
 
 	// env := os.Getenv("APP_ENV")
 	// if env == "production" {
@@ -53,7 +55,9 @@ func main() {
 	// godotenv.Load(".env.development")
 	// }
 	if os.Getenv("APP_ENV") != "production" {
-		godotenv.Load(".env.development")
+		if err := godotenv.Load(".env.development"); err != nil {
+			slog.Warn("Error loading .env.development", "err", err)
+		}
 	}
 	dbURL := os.Getenv("DB_URL")
 	db, err := sql.Open("postgres", dbURL)
@@ -115,7 +119,9 @@ func main() {
 
 	mux.HandleFunc("GET /test", func(w http.ResponseWriter, r *http.Request) {
 		slog.Info("TEST LOG MESSAGE", "key", "value")
-		w.Write([]byte("Check console logs"))
+		if _, err := w.Write([]byte("Check console logs")); err != nil {
+			slog.Error("failed to write response", "err", err)
+		}
 	})
 
 	ratelimiter := middleware.NewRateLimiter(5, 10, time.Minute)
@@ -129,7 +135,6 @@ func main() {
 	done := make(chan os.Signal, 1)
 	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
-	
 	go func() {
 		if err = server.ListenAndServe(); err != nil {
 			log.Fatalf("listen: %s\n", err)

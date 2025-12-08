@@ -61,9 +61,9 @@ func Authenticate(secret string, db *database.Queries) func(http.Handler) http.H
 				utils.RespondWithError(w, http.StatusUnauthorized, "unable to fetch role")
 				return
 			}
-			ctx := context.WithValue(r.Context(), "userID", userID)
-			ctx = context.WithValue(ctx, "tokenString", tokenSring)
-			ctx = context.WithValue(ctx, "role", role)
+			ctx := context.WithValue(r.Context(), UserIDKey, userID)
+			ctx = context.WithValue(ctx, TokenStringKey, tokenSring)
+			ctx = context.WithValue(ctx, RoleKey, role)
 			next.ServeHTTP(w, r.WithContext(ctx))
 
 		})
@@ -101,7 +101,7 @@ func RevokeTokenAthenticate(db RefreshTokenFetcher) func(http.Handler) http.Hand
 				utils.RespondWithError(w, http.StatusUnauthorized, "refresh token expired")
 				return
 			}
-			ctx := context.WithValue(r.Context(), "refreshTokenString", tokenString)
+			ctx := context.WithValue(r.Context(), RefreshTokenString, tokenString)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/blacktag/bugby-Go/internal/database"
+	"github.com/blacktag/bugby-Go/internal/middleware"
 	"github.com/blacktag/bugby-Go/internal/utils"
 
 	// "github.com/casbin/casbin/v2/log"
@@ -54,7 +55,7 @@ func (cfg *APIConfig) CreateBugHandler(w http.ResponseWriter, r *http.Request) {
 		"path", r.URL.Path,
 	)
 	w.Header().Set("Content-Type", "application/json")
-	userIDValue := r.Context().Value("userID")
+	userIDValue := r.Context().Value(middleware.UserIDKey)
 	userID, ok := userIDValue.(uuid.UUID)
 	if !ok {
 		logger.Error("user id missing in context")
@@ -178,7 +179,7 @@ func (cfg *APIConfig) UpdateBugHandler(w http.ResponseWriter, r *http.Request) {
 		"path", r.URL.Path,
 	)
 	logger.Info("Entered handler")
-	userIDVal := r.Context().Value("userID")
+	userIDVal := r.Context().Value(middleware.UserIDKey)
 	userID, ok := userIDVal.(uuid.UUID)
 	logger = logger.With("userID", userID)
 	if !ok {
@@ -274,14 +275,14 @@ func (cfg *APIConfig) DeleteBugByIDHandler(w http.ResponseWriter, r *http.Reques
 		"path", r.URL.Path,
 	)
 	logger.Info("Entered the deleteHandler")
-	userIDVal := r.Context().Value("userID")
+	userIDVal := r.Context().Value(middleware.UserIDKey)
 	userID, ok := userIDVal.(uuid.UUID)
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "invalid or missing user ID")
 		return
 	}
 	logger = logger.With("userID", userID)
-	userVal := r.Context().Value("user")
+	userVal := r.Context().Value(middleware.UserKey)
 	user, ok := userVal.(database.User)
 	if !ok {
 		logger.Error("user data not found in contest")
@@ -338,7 +339,7 @@ func (cfg *APIConfig) GetUserSpecificBugs(w http.ResponseWriter, r *http.Request
 		"handler", "To get user specific bugs",
 	)
 	logger.Info("entered the handler")
-	userIDVal := r.Context().Value("userID")
+	userIDVal := r.Context().Value(middleware.UserIDKey)
 	userID, ok := userIDVal.(uuid.UUID)
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "invalid or missing user ID")

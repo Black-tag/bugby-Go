@@ -19,7 +19,11 @@ import (
 
 func TestCreatUserHandler(t *testing.T) {
 	cfg, mock := setupTest(t)
-	defer cfg.SQLDB.Close()
+	defer func() {
+		if err := cfg.SQLDB.Close(); err != nil {
+			t.Logf("Error closing DB: %v", err)
+		}
+	}()
 
 	logger := slog.Default().With(
 		"test", "TestCreateBugHandler",
