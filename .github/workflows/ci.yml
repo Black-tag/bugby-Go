@@ -1,3 +1,11 @@
+name: Bugby-Go CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -27,7 +35,6 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          # match your go.mod/toolchain (1.24 is recommended)
           go-version: 1.24
 
       - name: Tidy modules
@@ -40,7 +47,6 @@ jobs:
         run: go mod download
 
       - name: Ensure test deps (sqlmock) available
-        # ensures test deps are present in module cache for analyzers
         run: |
           go get github.com/DATA-DOG/go-sqlmock@v1.5.2 || true
           go mod tidy
@@ -52,9 +58,8 @@ jobs:
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
-          # use v2.x (newer) so analyzers are compatible with modern go modules
           version: v2.7.2
-          # you can keep --no-config for CI quick-run, or remove it if you migrated config
+
           args: --no-config --timeout=5m
         env:
           CGO_ENABLED: 0
