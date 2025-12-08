@@ -56,7 +56,6 @@ jobs:
           version: v1.60
           args: --no-config --timeout=5m
         env:
-        env:
           CGO_ENABLED: 0
           GOFLAGS: "-mod=mod"
           GOPROXY: "https://proxy.golang.org,direct"
