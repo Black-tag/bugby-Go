@@ -3,7 +3,7 @@
 services:
 
   db:
-    image: postgres:16
+    image: postgres:18
     container_name: bugby-db
     environment:
       POSTGRES_USER: postgres
@@ -17,7 +17,7 @@ services:
       timeout: 5s
       retries: 5
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql
     restart: unless-stopped
     networks:
       - bugby-net
