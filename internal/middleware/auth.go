@@ -56,14 +56,14 @@ func Authenticate(secret string, db *database.Queries) func(http.Handler) http.H
 				return
 			}
 
-			role, err := db.GetRoleByID(r.Context(), userID)
-			if err != nil {
-				utils.RespondWithError(w, http.StatusUnauthorized, "unable to fetch role")
-				return
-			}
+			// role, err := db.GetRoleByID(r.Context(), userID)
+			// if err != nil {
+			// 	utils.RespondWithError(w, http.StatusUnauthorized, "unable to fetch role")
+			// 	return
+			// }
 			ctx := context.WithValue(r.Context(), UserIDKey, userID)
 			ctx = context.WithValue(ctx, TokenStringKey, tokenSring)
-			ctx = context.WithValue(ctx, RoleKey, role)
+			// ctx = context.WithValue(ctx, RoleKey, role)
 			next.ServeHTTP(w, r.WithContext(ctx))
 
 		})

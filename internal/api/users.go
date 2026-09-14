@@ -273,7 +273,7 @@ func (cfg *APIConfig) UpdateCredentialsHandler(w http.ResponseWriter, r *http.Re
 	}
 	err = cfg.DB.UpdateUserCredentials(r.Context(), database.UpdateUserCredentialsParams{
 		Email:          req.Email,
-		HashedPassword: hashedpassword,
+		PasswordHash: hashedpassword,
 		ID:             userID,
 	})
 	if err != nil {

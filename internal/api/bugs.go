@@ -281,20 +281,20 @@ func (cfg *APIConfig) DeleteBugByIDHandler(w http.ResponseWriter, r *http.Reques
 		utils.RespondWithError(w, http.StatusUnauthorized, "invalid or missing user ID")
 		return
 	}
-	logger = logger.With("userID", userID)
-	userVal := r.Context().Value(middleware.UserKey)
-	user, ok := userVal.(database.User)
+	// logger = logger.With("userID", userID)
+	// userVal := r.Context().Value(middleware.UserKey)
+	// user, ok := userVal.(database.User)
 	if !ok {
 		logger.Error("user data not found in contest")
 		utils.RespondWithError(w, http.StatusUnauthorized, "user not in context")
 		return
 	}
 
-	if user.Role != "admin" {
-		logger.Error("user has no admin status, cannot delete")
-		utils.RespondWithError(w, http.StatusForbidden, "admin access required")
-		return
-	}
+	// if user.Role != "admin" {
+	// 	logger.Error("user has no admin status, cannot delete")
+	// 	utils.RespondWithError(w, http.StatusForbidden, "admin access required")
+	// 	return
+	// }
 
 	bugParam := r.PathValue("bugid")
 	if bugParam == "" {
