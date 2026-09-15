@@ -2,14 +2,15 @@
 -- PostgreSQL database dump
 --
 
-\restrict zGXI4CyRB5kA3mXfUIvS8bckWZaZO6BzEaek9Aa6ASHjfJ7tkFsxdIKfoKzMQWj
+\restrict niC6CaU8kcBoR7Cko5tjNnwBZ4fAXAYkWNVvjzNjKZUQaMwcRVYCuNKEf3OqunG
 
--- Dumped from database version 16.10 (Ubuntu 16.10-0ubuntu0.24.04.1)
--- Dumped by pg_dump version 16.10 (Ubuntu 16.10-0ubuntu0.24.04.1)
+-- Dumped from database version 18.6 (Debian 18.6-1.pgdg13+2)
+-- Dumped by pg_dump version 18.6 (Debian 18.6-1.pgdg13+2)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
 SET idle_in_transaction_session_timeout = 0;
+SET transaction_timeout = 0;
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
 SELECT pg_catalog.set_config('search_path', '', false);
@@ -79,16 +80,30 @@ CREATE TABLE public.refresh_tokens (
 
 
 --
+-- Name: roles; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.roles (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    name text NOT NULL,
+    description text,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
 -- Name: users; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.users (
-    id uuid NOT NULL,
-    created_at timestamp without time zone NOT NULL,
-    updated_at timestamp without time zone NOT NULL,
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    username text NOT NULL,
     email text NOT NULL,
-    hashed_password text DEFAULT 'unset'::text NOT NULL,
-    role text DEFAULT 'user'::text NOT NULL
+    password_hash text NOT NULL,
+    role_id uuid NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    deleted_at timestamp with time zone
 );
 
 
@@ -117,6 +132,22 @@ ALTER TABLE ONLY public.refresh_tokens
 
 
 --
+-- Name: roles roles_name_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.roles
+    ADD CONSTRAINT roles_name_key UNIQUE (name);
+
+
+--
+-- Name: roles roles_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.roles
+    ADD CONSTRAINT roles_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: users users_email_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -133,24 +164,24 @@ ALTER TABLE ONLY public.users
 
 
 --
--- Name: bugs bugs_posted_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: users users_username_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.bugs
-    ADD CONSTRAINT bugs_posted_by_fkey FOREIGN KEY (posted_by) REFERENCES public.users(id);
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_username_key UNIQUE (username);
 
 
 --
--- Name: refresh_tokens refresh_tokens_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: users users_role_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.refresh_tokens
-    ADD CONSTRAINT refresh_tokens_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_role_id_fkey FOREIGN KEY (role_id) REFERENCES public.roles(id);
 
 
 --
 -- PostgreSQL database dump complete
 --
 
-\unrestrict zGXI4CyRB5kA3mXfUIvS8bckWZaZO6BzEaek9Aa6ASHjfJ7tkFsxdIKfoKzMQWj
+\unrestrict niC6CaU8kcBoR7Cko5tjNnwBZ4fAXAYkWNVvjzNjKZUQaMwcRVYCuNKEf3OqunG
 

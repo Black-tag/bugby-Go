@@ -40,6 +40,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	httpswagger "github.com/swaggo/http-swagger"
 	// "github.com/ydb-platform/ydb-go-sdk/v3/ratelimiter"
+	// new ones 
+	"github.com/blacktag/bugby-Go/internal/api/users"
 )
 
 func main() {
@@ -99,6 +101,7 @@ func main() {
 	authMiddleware2 := middleware.RevokeTokenAthenticate(cfg.DB)
 
 	mux := http.NewServeMux()
+	users.RegisterRoutes(mux, dbQueries)
 	muxWithMetrics := loggingMiddleware(mux)
 
 	protected := authMiddleware(middleware.Authorization(enforcer)(http.HandlerFunc(cfg.DeleteBugByIDHandler)))

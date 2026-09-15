@@ -91,7 +91,7 @@ func (cfg *APIConfig) CreateUserHandler(w http.ResponseWriter, r *http.Request) 
 	logger.Info("starting database operation")
 	user, err := cfg.DB.CreateUser(r.Context(), database.CreateUserParams{
 		Email:          req.Email,
-		HashedPassword: hashed_password,
+		PasswordHash: hashed_password,
 	})
 	if err != nil {
 		logger.Error("database opertaion failed", "error", err)
@@ -137,7 +137,7 @@ func (cfg *APIConfig) LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = utils.CheckPasswordAndHash(req.Password, user.HashedPassword)
+	err = utils.CheckPasswordAndHash(req.Password, user.PasswordHash)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusUnauthorized, "incorrect email or password")
 		return

@@ -370,7 +370,7 @@ WHERE id = $1`
 	mock.ExpectExec(regexp.QuoteMeta(expectedQuery)).WithArgs(bugID).WillReturnResult(sqlmock.NewResult(1, 1))
 	testUser := database.User{
 		ID:   userID,
-		Role: "admin",
+		// Role: "admin",
 	}
 
 	mux := http.NewServeMux()
