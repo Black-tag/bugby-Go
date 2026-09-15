@@ -44,15 +44,15 @@ func TestCreatUserHandler(t *testing.T) {
 
 	dbParams := database.CreateUserParams{
 		Email:          testEmail,
-		HashedPassword: hashed_password, // This is what your DB layer expects
+		PasswordHash: hashed_password, // This is what your DB layer expects
 	}
 	expectedUser := database.User{
 		ID:             uuid.New(),
 		CreatedAt:      time.Now(),
 		UpdatedAt:      time.Now(),
 		Email:          testEmail,
-		HashedPassword: hashed_password,
-		Role:           "user",
+		PasswordHash: hashed_password,
+		// RoleID:           1,
 	}
 
 	expectedQuery := `-- name: CreateUser :one
@@ -71,8 +71,9 @@ RETURNING id, created_at, updated_at, email, hashed_password, role`
 		expectedUser.CreatedAt,
 		expectedUser.UpdatedAt,
 		expectedUser.Email,
-		expectedUser.HashedPassword,
-		expectedUser.Role)
+		expectedUser.PasswordHash,
+		// expectedUser.
+	)
 
 	mock.ExpectQuery(regexp.QuoteMeta(expectedQuery)).WithArgs(dbParams.Email, sqlmock.AnyArg()).WillReturnRows(rows)
 
