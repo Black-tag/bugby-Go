@@ -30,12 +30,12 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
-          go-version: 1.24
+          go-version: 1.26
 
       - name: Tidy modules
         run: go mod tidy
@@ -58,7 +58,7 @@ jobs:
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v7
         with:
-          version: v2.7.2
+          version: v2.13.2
 
           args: --no-config --timeout=5m
         env:
