@@ -21,7 +21,7 @@ func NewUserService(repo UserRepository) *UserService {
 
 func (service *UserService) createUser(ctx context.Context, args CreateUserRequest) (database.User, error) {
 
-	hashed_password := ""
+	hashedPassword := ""
 	roleID, err := uuid.Parse(args.RoleID)
 	if err != nil {
 		return database.User{}, fmt.Errorf("invalid role_id: %w", err)
@@ -32,7 +32,7 @@ func (service *UserService) createUser(ctx context.Context, args CreateUserReque
 	params := database.CreateUserParams{
 		Email:        args.EmailID,
 		Username:     args.UserName,
-		PasswordHash: hashed_password,
+		PasswordHash: hashedPassword,
 		RoleID:       roleID,
 	}
 

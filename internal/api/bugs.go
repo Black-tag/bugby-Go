@@ -219,7 +219,7 @@ package api
 // 	}
 // 	logger = logger.With("bug", bug)
 // 	if userID != bug.PostedBy {
-// 		logger.Error("unauthorised to edit the bug, not owned by user", "error", err)
+// 		logger.Error("unauthorized to edit the bug, not owned by user", "error", err)
 // 		utils.RespondWithError(w, http.StatusUnauthorized, "only author can delete the bug")
 // 		return
 

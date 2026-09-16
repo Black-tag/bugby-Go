@@ -63,7 +63,7 @@ func main() {
 		log.Fatal(err)
 	}
 	defer db.Close()
-	if err := db.Ping(); err != nil {
+	if err = db.Ping(); err != nil {
 		log.Fatal("failed to connect to database", "err", err)
 	}
 	dbQueries := database.New(db)
@@ -72,7 +72,7 @@ func main() {
 	// if err != nil {
 	// 	log.Fatal("failed to init cache: ", err)
 	// }
-	if err := caching.InitCache(); err != nil {
+	if err = caching.InitCache(); err != nil {
 		log.Fatal("failed to initialize cache", "err", err)
 	}
 
@@ -116,7 +116,7 @@ func main() {
 	// mux.HandleFunc("/swagger/", httpswagger.WrapHandler)
 	// mux.Handle("GET /api/users", cachingMiddleware(http.HandlerFunc(cfg.GetUsersHandler)))
 	// mux.Handle("GET /api/users/me/bugs", authMiddleware(cachingMiddleware(http.HandlerFunc(cfg.GetUserSpecificBugs))))
-	mux.Handle("/metrics/", metrics.MetricsHandler())
+	mux.Handle("/metrics/", metrics.Handler())
 
 	// mux.HandleFunc("GET /test", func(w http.ResponseWriter, r *http.Request) {
 	// 	slog.Info("TEST LOG MESSAGE", "key", "value")
@@ -160,7 +160,7 @@ func main() {
 	if err := db.Close(); err != nil {
 		logger.Error("database shutdown failed", "err", err)
 	}
-	logger.Info("Server Exited Succesfully")
+	logger.Info("Server Exited Successfully")
 
 }
 
