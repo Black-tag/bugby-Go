@@ -59,6 +59,6 @@ func NewMetrics(reg prometheus.Registerer) *Metrics {
 	return m
 }
 
-func MetricsHandler() http.Handler {
+func Handler() http.Handler {
 	return promhttp.Handler()
 }

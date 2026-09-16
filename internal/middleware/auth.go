@@ -16,7 +16,7 @@ type RefreshTokenFetcher interface {
 	GetRefreshToken(ctx context.Context, token string) (database.RefreshToken, error)
 }
 
-func Authenticate(secret string, db *database.Queries) func(http.Handler) http.Handler {
+func Authenticate(secret string, _ *database.Queries) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			authHeader := r.Header.Get("Authorization")
@@ -35,7 +35,7 @@ func Authenticate(secret string, db *database.Queries) func(http.Handler) http.H
 			}
 			tokenSring := parts[1]
 			claims := &jwt.RegisteredClaims{}
-			token, err := jwt.ParseWithClaims(tokenSring, claims, func(token *jwt.Token) (interface{}, error) {
+			token, err := jwt.ParseWithClaims(tokenSring, claims, func(_ *jwt.Token) (interface{}, error) {
 				return []byte(secret), nil
 			})
 			if err != nil {
@@ -56,14 +56,14 @@ func Authenticate(secret string, db *database.Queries) func(http.Handler) http.H
 				return
 			}
 
-			role, err := db.GetRoleByID(r.Context(), userID)
-			if err != nil {
-				utils.RespondWithError(w, http.StatusUnauthorized, "unable to fetch role")
-				return
-			}
+			// role, err := db.GetRoleByID(r.Context(), userID)
+			// if err != nil {
+			// 	utils.RespondWithError(w, http.StatusUnauthorized, "unable to fetch role")
+			// 	return
+			// }
 			ctx := context.WithValue(r.Context(), UserIDKey, userID)
 			ctx = context.WithValue(ctx, TokenStringKey, tokenSring)
-			ctx = context.WithValue(ctx, RoleKey, role)
+			// ctx = context.WithValue(ctx, RoleKey, role)
 			next.ServeHTTP(w, r.WithContext(ctx))
 
 		})

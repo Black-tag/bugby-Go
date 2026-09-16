@@ -1,0 +1,70 @@
+run:
+  timeout: 5m
+  tests: true
+
+linters:
+  enable:
+    - gofmt
+    - govet
+    - gosimple
+    - staticcheck
+    - unused
+    - ineffassign
+    - typecheck
+    - revive
+    - gocyclo
+    - gosec
+    - errcheck
+    - misspell
+    - nakedret
+    - dogsled
+
+linters-settings:
+  govet:
+    enable:
+      - shadow
+  gocyclo:
+    min-complexity: 15
+  dupl:
+    threshold: 100
+  goconst:
+    min-len: 2
+    min-occurrences: 2
+  misspell:
+    locale: US
+  gosec:
+     # To select a subset of rules to run.
+     # Available rules: https://github.com/securego/gosec#available-rules
+    includes:
+      - G101
+      - G102
+      - G103
+      - G104
+      - G106
+      - G107
+      - G108
+      - G109
+      - G110
+      - G201
+      - G202
+      - G203
+      - G204
+      - G301
+      - G302
+      - G303
+      - G304
+      - G305
+      - G306
+      - G307
+      - G401
+      - G402
+      - G403
+      - G404
+      - G501
+      - G502
+      - G503
+      - G504
+      - G505
+      - G601
+    severity: medium
+    confidence: medium

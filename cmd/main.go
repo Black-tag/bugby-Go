@@ -26,110 +26,111 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/blacktag/bugby-Go/internal/api"
+	// "github.com/blacktag/bugby-Go/internal/api"
 	"github.com/blacktag/bugby-Go/internal/caching"
 	"github.com/blacktag/bugby-Go/internal/database"
 	_ "github.com/blacktag/bugby-Go/internal/docs"
 	"github.com/blacktag/bugby-Go/internal/metrics"
-	"github.com/blacktag/bugby-Go/internal/middleware"
-	"github.com/casbin/casbin/v2"
-	"github.com/casbin/casbin/v2/model"
-	fileadapter "github.com/casbin/casbin/v2/persist/file-adapter"
-	"github.com/joho/godotenv"
+	// "github.com/blacktag/bugby-Go/internal/middleware"
+	// "github.com/casbin/casbin/v2"
+	// "github.com/casbin/casbin/v2/model"
+	// fileadapter "github.com/casbin/casbin/v2/persist/file-adapter"
+	// "github.com/joho/godotenv"
 	_ "github.com/lib/pq"
-	"github.com/prometheus/client_golang/prometheus"
-	httpswagger "github.com/swaggo/http-swagger"
-	// "github.com/ydb-platform/ydb-go-sdk/v3/ratelimiter"
+	// "github.com/prometheus/client_golang/prometheus"
+	// httpswagger "github.com/swaggo/http-swagger"
+	"github.com/blacktag/bugby-Go/internal/api/users"
+	"github.com/blacktag/bugby-Go/internal/config"
 )
 
 func main() {
 
-	if err := godotenv.Load(); err != nil {
-		slog.Warn("Error loading .env file", "err", err)
-	}
-
-	// env := os.Getenv("APP_ENV")
-	// if env == "production" {
-	// 	godotenv.Load(".env.production")
-	// } else {
-	// godotenv.Load(".env.development")
+	// if err := godotenv.Load(); err != nil {
+	// 	slog.Warn("Error loading .env file", "err", err)
 	// }
-	if os.Getenv("APP_ENV") != "production" {
-		if err := godotenv.Load(".env.development"); err != nil {
-			slog.Warn("Error loading .env.development", "err", err)
-		}
+	// if os.Getenv("APP_ENV") != "production" {
+	// 	if err := godotenv.Load(".env.development"); err != nil {
+	// 		slog.Warn("Error loading .env.development", "err", err)
+	// 	}
+	// }
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		log.Fatal("failed to load config", "err", err)
 	}
-	dbURL := os.Getenv("DB_URL")
-	db, err := sql.Open("postgres", dbURL)
+	// dbURL := os.Getenv("DB_URL")
+	db, err := sql.Open("postgres", cfg.DBURL)
 	if err != nil {
 		log.Fatal(err)
 	}
+	if err = db.Ping(); err != nil {
+		log.Fatal("failed to connect to database", "err", err)
+	}
 	dbQueries := database.New(db)
-	secret := os.Getenv("SECRET")
 
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
-	}
-	err = caching.InitCache()
-	if err != nil {
-		log.Fatal("failed to init cache: ", err)
+	// err = caching.InitCache()
+	// if err != nil {
+	// 	log.Fatal("failed to init cache: ", err)
+	// }
+	if err = caching.InitCache(); err != nil {
+		log.Fatal("failed to initialize cache", "err", err)
 	}
 
-	cfg := api.APIConfig{
-		DB:     dbQueries,
-		SECRET: secret,
-	}
-	enforcer, err := SetupCasbin()
-	if err != nil {
-		log.Fatal("failed to setup casbin: ", err)
-	}
+	// cfg := api.APIConfig{
+	// 	DB:     dbQueries,
+	// 	SECRET: secret,
+	// }
+	// enforcer, err := SetupCasbin()
+	// if err != nil {
+	// 	log.Fatal("failed to setup casbin: ", err)
+	// }
 
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	slog.SetDefault(logger)
 
-	reg := prometheus.DefaultRegisterer
-	m := metrics.NewMetrics(reg)
+	// reg := prometheus.DefaultRegisterer
+	// m := metrics.NewMetrics(reg)
 
-	loggingMiddleware := middleware.MetricsMiddleware(m)
+	// loggingMiddleware := middleware.MetricsMiddleware(m)
 
-	cachingMiddleware := middleware.CachingMiddleware(5 * time.Minute)
+	// cachingMiddleware := middleware.CachingMiddleware(5 * time.Minute)
 
-	authMiddleware := middleware.Authenticate(cfg.SECRET, cfg.DB)
-	authMiddleware2 := middleware.RevokeTokenAthenticate(cfg.DB)
+	// authMiddleware := middleware.Authenticate(cfg.SECRET, cfg.DB)
+	// authMiddleware2 := middleware.RevokeTokenAthenticate(cfg.DB)
 
 	mux := http.NewServeMux()
-	muxWithMetrics := loggingMiddleware(mux)
+	users.RegisterRoutes(mux, dbQueries)
+	// muxWithMetrics := loggingMiddleware(mux)
 
-	protected := authMiddleware(middleware.Authorization(enforcer)(http.HandlerFunc(cfg.DeleteBugByIDHandler)))
-	mux.Handle("POST /api/bugs", authMiddleware(http.HandlerFunc(cfg.CreateBugHandler)))
-	mux.Handle("DELETE /api/bugs/{bugid}", protected)
-	mux.Handle("POST /api/bugs/{bugid}", authMiddleware(http.HandlerFunc(cfg.UpdateBugHandler)))
-	mux.Handle("GET /api/bugs/{bugid}", cachingMiddleware(http.HandlerFunc(cfg.GetBugByIDHandler)))
-	mux.Handle("GET /api/bugs", cachingMiddleware(http.HandlerFunc(cfg.GetBugsHandler)))
-	mux.HandleFunc("POST /api/users", cfg.CreateUserHandler)
-	mux.HandleFunc("POST /api/login", cfg.LoginUserHandler)
-	mux.HandleFunc("POST /api/refresh", cfg.RefreshTokenHandler)
-	mux.Handle("POST /api/revoke", authMiddleware2(http.HandlerFunc(cfg.RevokeTokenHandler)))
-	mux.Handle("PUT /api/users", authMiddleware(http.HandlerFunc(cfg.UpdateCredentialsHandler)))
-	mux.HandleFunc("/swagger/", httpswagger.WrapHandler)
-	mux.Handle("GET /api/users", cachingMiddleware(http.HandlerFunc(cfg.GetUsersHandler)))
-	mux.Handle("GET /api/users/me/bugs", authMiddleware(cachingMiddleware(http.HandlerFunc(cfg.GetUserSpecificBugs))))
-	mux.Handle("/metrics/", metrics.MetricsHandler())
+	// // protected := authMiddleware(middleware.Authorization(enforcer)(http.HandlerFunc(cfg.DeleteBugByIDHandler)))
+	// mux.Handle("POST /api/bugs", authMiddleware(http.HandlerFunc(cfg.CreateBugHandler)))
+	// // mux.Handle("DELETE /api/bugs/{bugid}", protected)
+	// mux.Handle("POST /api/bugs/{bugid}", authMiddleware(http.HandlerFunc(cfg.UpdateBugHandler)))
+	// mux.Handle("GET /api/bugs/{bugid}", cachingMiddleware(http.HandlerFunc(cfg.GetBugByIDHandler)))
+	// mux.Handle("GET /api/bugs", cachingMiddleware(http.HandlerFunc(cfg.GetBugsHandler)))
+	// mux.HandleFunc("POST /api/users", cfg.CreateUserHandler)
+	// mux.HandleFunc("POST /api/login", cfg.LoginUserHandler)
+	// mux.HandleFunc("POST /api/refresh", cfg.RefreshTokenHandler)
+	// mux.Handle("POST /api/revoke", authMiddleware2(http.HandlerFunc(cfg.RevokeTokenHandler)))
+	// mux.Handle("PUT /api/users", authMiddleware(http.HandlerFunc(cfg.UpdateCredentialsHandler)))
+	// mux.HandleFunc("/swagger/", httpswagger.WrapHandler)
+	// mux.Handle("GET /api/users", cachingMiddleware(http.HandlerFunc(cfg.GetUsersHandler)))
+	// mux.Handle("GET /api/users/me/bugs", authMiddleware(cachingMiddleware(http.HandlerFunc(cfg.GetUserSpecificBugs))))
+	mux.Handle("/metrics/", metrics.Handler())
 
-	mux.HandleFunc("GET /test", func(w http.ResponseWriter, r *http.Request) {
-		slog.Info("TEST LOG MESSAGE", "key", "value")
-		if _, err := w.Write([]byte("Check console logs")); err != nil {
-			slog.Error("failed to write response", "err", err)
-		}
-	})
+	// mux.HandleFunc("GET /test", func(w http.ResponseWriter, r *http.Request) {
+	// 	slog.Info("TEST LOG MESSAGE", "key", "value")
+	// 	if _, err := w.Write([]byte("Check console logs")); err != nil {
+	// 		slog.Error("failed to write response", "err", err)
+	// 	}
+	// })
 
-	ratelimiter := middleware.NewRateLimiter(5, 10, time.Minute)
-	muxWithLimiter := ratelimiter.Limit(muxWithMetrics)
+	// ratelimiter := middleware.NewRateLimiter(5, 10, time.Minute)
+	// muxWithLimiter := ratelimiter.Limit(muxWithMetrics)
 
 	server := &http.Server{
-		Addr:    ":" + port,
-		Handler: muxWithLimiter,
+		Addr: ":" + cfg.Port,
+		// Handler: muxWithLimiter,
+		Handler: mux,
 	}
 
 	done := make(chan os.Signal, 1)
@@ -155,28 +156,31 @@ func main() {
 	if err := server.Shutdown(ctx); err != nil {
 		log.Fatalf("server shutdown failed: %v", err)
 	}
-	logger.Info("Server Exited Succesfully")
+	if err := db.Close(); err != nil {
+		logger.Error("database shutdown failed", "err", err)
+	}
+	logger.Info("Server Exited Successfully")
 
 }
 
-func SetupCasbin() (*casbin.Enforcer, error) {
-	m, err := model.NewModelFromFile("rbac_model.conf")
-	if err != nil {
+// func SetupCasbin() (*casbin.Enforcer, error) {
+// 	m, err := model.NewModelFromFile("rbac_model.conf")
+// 	if err != nil {
 
-		return nil, fmt.Errorf("cannot load model for enforcer: %v", err)
-	}
+// 		return nil, fmt.Errorf("cannot load model for enforcer: %v", err)
+// 	}
 
-	a := fileadapter.NewAdapter("rbac_policy.csv")
+// 	a := fileadapter.NewAdapter("rbac_policy.csv")
 
-	enforcer, err := casbin.NewEnforcer(m, a)
-	if err != nil {
+// 	enforcer, err := casbin.NewEnforcer(m, a)
+// 	if err != nil {
 
-		return nil, fmt.Errorf("cannot create enforcer: %v", err)
-	}
-	err = enforcer.LoadPolicy()
-	if err != nil {
+// 		return nil, fmt.Errorf("cannot create enforcer: %v", err)
+// 	}
+// 	err = enforcer.LoadPolicy()
+// 	if err != nil {
 
-		return nil, fmt.Errorf("cannot load policy: %v", err)
-	}
-	return enforcer, nil
-}
+// 		return nil, fmt.Errorf("cannot load policy: %v", err)
+// 	}
+// 	return enforcer, nil
+// }

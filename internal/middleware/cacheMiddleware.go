@@ -8,7 +8,7 @@ import (
 	"github.com/blacktag/bugby-Go/internal/caching"
 )
 
-func CachingMiddleware(expiration time.Duration) func(http.Handler) http.Handler {
+func CachingMiddleware(_ time.Duration) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			logger := slog.Default().With("middleware", "caching")
