@@ -6,7 +6,7 @@ import (
 )
 
 type UserRepository interface {
-	 CreateUser(ctx context.Context, args database.CreateUserParams) (database.User, error)
+	CreateUser(ctx context.Context, args database.CreateUserParams) (database.User, error)
 }
 
 type userRepository struct {

@@ -76,8 +76,6 @@ func main() {
 		log.Fatal("failed to initialize cache", "err", err)
 	}
 
-	
-
 	// cfg := api.APIConfig{
 	// 	DB:     dbQueries,
 	// 	SECRET: secret,
@@ -131,7 +129,7 @@ func main() {
 	// muxWithLimiter := ratelimiter.Limit(muxWithMetrics)
 
 	server := &http.Server{
-		Addr:    ":" + cfg.Port,
+		Addr: ":" + cfg.Port,
 		// Handler: muxWithLimiter,
 		Handler: mux,
 	}
@@ -160,7 +158,7 @@ func main() {
 		log.Fatalf("server shutdown failed: %v", err)
 	}
 	if err := db.Close(); err != nil {
-    	logger.Error("database shutdown failed", "err", err)
+		logger.Error("database shutdown failed", "err", err)
 	}
 	logger.Info("Server Exited Succesfully")
 

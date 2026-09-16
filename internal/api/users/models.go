@@ -5,10 +5,10 @@ import (
 )
 
 type CreateUserRequest struct {
-	UserName    string `json:"username"`
-	EmailID string `json:"email"`
+	UserName string `json:"username"`
+	EmailID  string `json:"email"`
 	Password string `json:"password"`
-	RoleID string `json:"role_id"`
+	RoleID   string `json:"role_id"`
 }
 
 type CreateUserResponse struct {

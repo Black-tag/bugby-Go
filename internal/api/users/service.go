@@ -14,9 +14,9 @@ type UserService struct {
 }
 
 func NewUserService(repo UserRepository) *UserService {
-    return &UserService{
-        repo: repo,
-    }
+	return &UserService{
+		repo: repo,
+	}
 }
 
 func (service *UserService) createUser(ctx context.Context, args CreateUserRequest) (database.User, error) {
@@ -30,10 +30,10 @@ func (service *UserService) createUser(ctx context.Context, args CreateUserReque
 	fmt.Println("ROLE ID FROM REQUEST:", args.RoleID)
 	fmt.Println("PARSED ROLE ID:", roleID)
 	params := database.CreateUserParams{
-		Email:          args.EmailID,
-		Username:           args.UserName,
+		Email:        args.EmailID,
+		Username:     args.UserName,
 		PasswordHash: hashed_password,
-		RoleID: roleID,
+		RoleID:       roleID,
 	}
 
 	user, err := service.repo.CreateUser(ctx, params)
