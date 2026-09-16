@@ -31,7 +31,7 @@ func (service *UserService) createUser(ctx context.Context, args CreateUserReque
 	fmt.Println("PARSED ROLE ID:", roleID)
 	params := database.CreateUserParams{
 		Email:          args.EmailID,
-		Username:           args.Name,
+		Username:           args.UserName,
 		PasswordHash: hashed_password,
 		RoleID: roleID,
 	}

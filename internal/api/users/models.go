@@ -5,9 +5,9 @@ import (
 )
 
 type CreateUserRequest struct {
-	Name    string `json:"name"`
-	EmailID string `json:"email_id"`
-	Password string
+	UserName    string `json:"username"`
+	EmailID string `json:"email"`
+	Password string `json:"password"`
 	RoleID string `json:"role_id"`
 }
 
