@@ -39,8 +39,6 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/prometheus/client_golang/prometheus"
 	httpswagger "github.com/swaggo/http-swagger"
-	// "github.com/ydb-platform/ydb-go-sdk/v3/ratelimiter"
-	// new ones 
 	"github.com/blacktag/bugby-Go/internal/api/users"
 )
 
@@ -49,13 +47,6 @@ func main() {
 	if err := godotenv.Load(); err != nil {
 		slog.Warn("Error loading .env file", "err", err)
 	}
-
-	// env := os.Getenv("APP_ENV")
-	// if env == "production" {
-	// 	godotenv.Load(".env.production")
-	// } else {
-	// godotenv.Load(".env.development")
-	// }
 	if os.Getenv("APP_ENV") != "production" {
 		if err := godotenv.Load(".env.development"); err != nil {
 			slog.Warn("Error loading .env.development", "err", err)
@@ -157,6 +148,9 @@ func main() {
 
 	if err := server.Shutdown(ctx); err != nil {
 		log.Fatalf("server shutdown failed: %v", err)
+	}
+	if err := db.Close(); err != nil {
+    	logger.Error("database shutdown failed", "err", err)
 	}
 	logger.Info("Server Exited Succesfully")
 
