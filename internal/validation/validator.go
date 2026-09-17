@@ -4,9 +4,6 @@ import (
 	"gopkg.in/go-playground/validator.v9"
 )
 
-
-
-
 type Validator struct {
 	validate *validator.Validate
 }
