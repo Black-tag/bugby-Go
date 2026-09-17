@@ -67,10 +67,6 @@ func main() {
 	}
 	dbQueries := database.New(db)
 
-	// err = caching.InitCache()
-	// if err != nil {
-	// 	log.Fatal("failed to init cache: ", err)
-	// }
 	if err = caching.InitCache(); err != nil {
 		log.Fatal("failed to initialize cache", "err", err)
 	}
@@ -129,7 +125,6 @@ func main() {
 
 	server := &http.Server{
 		Addr: ":" + cfg.Port,
-		// Handler: muxWithLimiter,
 		Handler: mux,
 	}
 

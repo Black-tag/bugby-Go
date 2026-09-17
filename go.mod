@@ -16,6 +16,7 @@ require (
 	github.com/redis/go-redis/v9 v9.13.0
 	github.com/swaggo/swag v1.16.6
 	golang.org/x/time v0.12.0
+	gopkg.in/go-playground/validator.v9 v9.31.0
 )
 
 require (
@@ -29,7 +30,10 @@ require (
 	github.com/go-openapi/jsonreference v0.20.0 // indirect
 	github.com/go-openapi/spec v0.20.6 // indirect
 	github.com/go-openapi/swag v0.19.15 // indirect
+	github.com/go-playground/locales v0.14.1 // indirect
+	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
+	github.com/leodido/go-urn v1.5.0 // indirect
 	github.com/mailru/easyjson v0.7.6 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/prometheus/client_model v0.6.2 // indirect
@@ -41,5 +45,6 @@ require (
 	golang.org/x/sys v0.43.0 // indirect
 	golang.org/x/tools v0.44.1-0.20260420230617-19499e7caabc // indirect
 	google.golang.org/protobuf v1.36.8 // indirect
+	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )

@@ -3,17 +3,23 @@ package users
 import (
 	"encoding/json"
 	"net/http"
+
+	"github.com/blacktag/bugby-Go/internal/validation"
+// 	"gopkg.in/go-playground/validator.v9"
 )
 
 type UserHandler struct {
 	service *UserService
+	validator *validation.Validator
 }
 
-func NewUserHandler(service *UserService) *UserHandler {
+func NewUserHandler(service *UserService, validator *validation.Validator) *UserHandler {
 	return &UserHandler{
 		service: service,
+		validator: validator,
 	}
 }
+
 
 func (handler *UserHandler) CreateUserHandler(
 	w http.ResponseWriter,
@@ -25,6 +31,9 @@ func (handler *UserHandler) CreateUserHandler(
 	if err != nil {
 		http.Error(w, "invalid request body", http.StatusBadRequest)
 		return
+	}
+	if err = handler.validator.Validate(req); err != nil {
+		http.Error(w, "invalid request body", http.StatusBadRequest)
 	}
 
 	user, err := handler.service.createUser(r.Context(), req)
@@ -41,3 +50,9 @@ func (handler *UserHandler) CreateUserHandler(
 		return
 	}
 }
+
+
+// func(handler *UserHandler)GetUserWithID(w http.ResponseWriter, r *http.Request){
+// 	userID := r.Body()
+
+// }
