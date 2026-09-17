@@ -3,6 +3,9 @@ package users
 import (
 	"encoding/json"
 	"net/http"
+
+	"github.com/Black-tag/bugby-Go/internal/validator"
+	"gopkg.in/go-playground/validator.v9"
 )
 
 type UserHandler struct {
@@ -25,6 +28,9 @@ func (handler *UserHandler) CreateUserHandler(
 	if err != nil {
 		http.Error(w, "invalid request body", http.StatusBadRequest)
 		return
+	}
+	if err = validator.Validate(req); err != nil {
+		http.Error(w, "invalid request body", http.StatusBadRequest)
 	}
 
 	user, err := handler.service.createUser(r.Context(), req)
